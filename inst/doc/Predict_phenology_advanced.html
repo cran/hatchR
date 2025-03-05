@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Predict fish phenology: advanced</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Predict fish phenology: advanced</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The function <code>predict_phenolgy()</code> is purposefully kept
+fairly simple so it can be expanded to iterate across datasets.
+Typically, this will take the form of loops or vectorizing in R
+(functions of the <code>map()</code> family from <strong>purrr</strong>
+and <code>apply()</code> family from <strong>base</strong>). There are
+many reasons why you might want to iterate, including predicting over
+multiple years, multiple sites, predicting hatch or emergence
+simultaneously, or even using multiple potential spawn dates. We’ll show
+some examples below (moving from less to more complicated). First, we
+load packages:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(hatchR) <span class="co"># for data and phenology modeling</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2) <span class="co"># for additional plotting options</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(purrr) <span class="co"># for iteration</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># for date manipulation</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(tibble) <span class="co"># for data manipulation</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># for data manipulation</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(tidyr) <span class="co"># for data manipulation</span></span></code></pre></div>
+</div>
+<div id="multiple-spawn-dates" class="section level2">
+<h2>Multiple spawn dates</h2>
+<p>Given the example we used in the Predict Phenology-Basic vignette,
+perhaps we now want to expand it to predict multiple spawn dates (e.g.,
+the early, peak, and late part of the spawning distribution) for the
+Woody Island population in Lake Iliamna. Using Table 1 from <span class="citation">Sparks et al. (2019)</span> we see that the spawning
+range is between August 14 and September 3rd, with the peak occurring
+August 18th. We can set these dates up as a vector to run the model
+over.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>WI_spawn_dates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;1990-08-14&quot;</span>, <span class="st">&quot;1990-08-18&quot;</span>, <span class="st">&quot;1990-09-3&quot;</span>)</span></code></pre></div>
+<p>The we will go through the typical process of getting the model
+parameterized as we did previously.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>sockeye_hatch_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Beacham and Murray 1990&quot;</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;sockeye&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="dv">2</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>)</span></code></pre></div>
+<p>Now we can automate the model. We’ll demonstrate two ways—a loop and
+a vectorized approach.</p>
+<div id="looping" class="section level3">
+<h3>Looping</h3>
+<p>We will show an example of how to set up a <code>for</code> loop to
+run through each element of the <code>woody_island</code> dataset.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Loop storage objects</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>OUT_loop_all <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>OUT_loop_d2h <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># Loop body</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="cf">for</span> (d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(WI_spawn_dates)) { <span class="co"># d will be our numerical iterator</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="co"># subset the element d of the vector and assign to object</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  WI_spawn <span class="ot">&lt;-</span> WI_spawn_dates[d]</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="co"># predict phenology</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  WI_hatch <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>    <span class="at">data =</span> woody_island,</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>    <span class="at">dates =</span> date,</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>    <span class="at">temperature =</span> temp_c,</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>    <span class="at">spawn.date =</span> WI_spawn,</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>    <span class="at">model =</span> sockeye_hatch_mod</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  )</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="do">### ALL output </span><span class="al">###</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="co"># do this if we want to maintain all info predict_phenology</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  OUT_loop_all[[d]] <span class="ot">&lt;-</span> WI_hatch</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="do">### A single element of output </span><span class="al">###</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>  <span class="co"># alternatively, subsets out output</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="fu">matrix</span>(<span class="at">data =</span> <span class="cn">NA</span>, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">nrow =</span> <span class="dv">1</span>)) <span class="co"># empty dataframe to add in data</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>  <span class="fu">colnames</span>(temp) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;spawn_date&quot;</span>, <span class="st">&quot;days_2_hatch&quot;</span>) <span class="co"># change column names</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>  temp<span class="sc">$</span>spawn_date <span class="ot">&lt;-</span> WI_spawn <span class="co"># assign spawn date</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>  temp<span class="sc">$</span>days_2_hatch <span class="ot">&lt;-</span> WI_hatch<span class="sc">$</span>days_to_develop <span class="co"># assign days to hatch</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>  OUT_loop_d2h <span class="ot">&lt;-</span> <span class="fu">rbind</span>(OUT_loop_d2h, temp) <span class="co"># row bind temp object and OUT object</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>}</span></code></pre></div>
+<p>Inspect the loop output:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">glimpse</span>(OUT_loop_all)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; List of 3</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 71</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-14&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-23&quot;</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [71 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 74</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-18&quot;</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-30&quot;</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [74 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 110</span></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-09-03&quot;</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-12-21&quot;</span></span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [110 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb5-49"><a href="#cb5-49" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb5-50"><a href="#cb5-50" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</span></span></code></pre></div>
+<p>You can also see we made a tibble of dates and predicted days to
+hatch:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>OUT_loop_d2h</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 2</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;   spawn_date days_2_hatch</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;             &lt;int&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 1 1990-08-14           71</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; 2 1990-08-18           74</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; 3 1990-09-3           110</span></span></code></pre></div>
+<p>If you don’t want the full output of each run of
+<code>predict_phenolgy()</code> and you just for example want the
+predicted days to hatch, then it’s easier to access those elements
+within the loop as demonstrated with the <code>temp</code> object
+section demonstrated in the loop.</p>
+</div>
+<div id="vectorizing" class="section level3">
+<h3>Vectorizing</h3>
+<div id="mapping" class="section level4">
+<h4>Mapping</h4>
+<p>Vectorizing, while historically about prioritizing speed, is now more
+about making your code more readable (see Chapter 26 in <a href="https://r4ds.hadley.nz/iteration">R for Data Science</a> and
+chapter 9 in <a href="https://adv-r.hadley.nz/functionals.html">Advanced
+R</a>).</p>
+<p>We’ll demonstrate using <code>purrr::map()</code>. If you are
+unfamiliar with mapping but want to learn more about how it works and
+it’s power, we highly recommend the linked chapters from R for Data
+Science and Advanced R.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># map works by applying a function over a list (our vector is a very simple list)</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co"># if you are familiar with apply() functions, map is essentially the same</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>results_map <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  WI_spawn_dates, <span class="co"># vector we are mapping over</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  predict_phenology, <span class="co"># function we are mapping with (note no &quot;()&quot;),</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">data =</span> woody_island, <span class="co"># additional arguments required by predict_phenology</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="at">model =</span> sockeye_hatch_mod</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>)</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co"># we now have a list of lists the same as OUT_loop_all</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="fu">glimpse</span>(results_map)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; List of 3</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 71</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-14&quot;</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-23&quot;</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [71 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 74</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-18&quot;</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-30&quot;</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [74 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 110</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-09-03&quot;</span></span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-12-21&quot;</span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [110 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</span></span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a></span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co"># we can then access days to hatch easily as such</span></span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a>results_map <span class="sc">|&gt;</span> <span class="fu">map_dbl</span>(<span class="st">&quot;days_to_develop&quot;</span>)</span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="co">#&gt; [1]  71  74 110</span></span></code></pre></div>
+</div>
+<div id="apply" class="section level4">
+<h4>Apply</h4>
+<p>While <strong>tidyverse</strong> packages like <strong>purrr</strong>
+have become quite popular, the base functionality of R has long had a
+set of functions to do similar things as map. They are called the apply
+family. Because <strong>hatchR</strong> is built using much of the
+functionality of the tidyverse we opt for using
+<code>purrr:::map()</code> over <code>apply()</code> functions, however
+we will demonstrate a similar workflow as above using the apply
+family.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># lapply() is the equivalent function as map() in the apply family</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># they both output lists</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>results_lapply <span class="ot">&lt;-</span> <span class="fu">lapply</span>(WI_spawn_dates, <span class="co"># vector we are mapping over</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  predict_phenology, <span class="co"># function we are mapping with (note no &quot;()&quot;),</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="at">data =</span> woody_island, <span class="co"># additional arguments required by predict phenology</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="at">model =</span> sockeye_hatch_mod</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>)</span></code></pre></div>
+<p>You can see that <code>lapply()</code> and <code>purrr::map()</code>
+output the same results:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">glimpse</span>(results_lapply)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; List of 3</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 71</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-14&quot;</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-23&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [71 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 74</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-18&quot;</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-30&quot;</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [74 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt;  $ :List of 4</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 110</span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-09-03&quot;</span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-12-21&quot;</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [110 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="iterating-over-multiple-variables" class="section level2">
+<h2>Iterating over multiple variables</h2>
+<p>An obvious extension of the example above is to use sites with
+multiple years of data and to predict hatch and emergence. In the
+example from the Predict Phenology-Basic vignette, we saw we had some
+days where the logger appeared to be out of the water, so let’s use a
+cleaner dataset.</p>
+<p>In this example we will use temperature from the Crooked River, a
+tributary of the Boise River in Idaho, USA, from a reach with known bull
+trout spawning. The dataset is included as
+<code>crooked_river</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># look at data structure</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">glimpse</span>(crooked_river)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; Rows: 1,826</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; Columns: 2</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; $ date   &lt;dttm&gt; 2010-12-01, 2010-12-02, 2010-12-03, 2010-12-04, 2010-12-05, 20…</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; $ temp_c &lt;dbl&gt; 1.1638020, 1.3442852, 1.2533443, 1.0068728, 1.2899153, 1.229158…</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"># visually check data</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="fu">plot_check_temp</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  <span class="at">data =</span> crooked_river,</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  <span class="at">temp_min =</span> <span class="dv">0</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>  <span class="at">temp_max =</span> <span class="dv">12</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>We can use the functionality of <strong>dplyr</strong> to do a data
+check that shows the number of observations per year:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>crooked_river <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> lubridate<span class="sc">::</span><span class="fu">year</span>(date)) <span class="sc">|&gt;</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">|&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">tally</span>()</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 2</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt;    year     n</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; 1  2010    31</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; 2  2011   365</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; 3  2012   366</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; 4  2013   365</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt; 5  2014   365</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span></code></pre></div>
+<p>We see we have 5 full years of data to use. For the sake of this
+exercise, let’s assume bull trout spawning in this system starts
+September 1st, peaks September 15th, and is mostly done by September
+30th.</p>
+<p>Remember, our data starts just barely in 2010, so our spawning years
+would be 2011-2015. However we may not have enough days of record to
+make predictions for 2015 so best to check that first.</p>
+<p>First let’s just check to see if fish spawning in 2015 would have
+enough data to hatch and emerge.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># select bull trout hatch and emergence models</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>bull_hatch_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span> <span class="co"># note we are using hatch model here</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>bull_emerge_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;emerge&quot;</span> <span class="co"># note we are using emerge model here</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>)</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co"># set spawning dates in 2015</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>dates_2015 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;2015-09-01&quot;</span>, <span class="st">&quot;2015-09-15&quot;</span>, <span class="st">&quot;2015-09-30&quot;</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="do">## hatch first</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>hatch_2015 <span class="ot">&lt;-</span> dates_2015 <span class="sc">|&gt;</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>  predict_phenology,</span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>  <span class="at">data =</span> crooked_river,</span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a>  <span class="at">model =</span> bull_hatch_mod</span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a>)</span></code></pre></div>
+<p>See how we receive 2 separate warning messages saying: “Fish did not
+accrue enough effective units to develop. Did your fish spawn too close
+to the end of your data? Spawn date is _____”. It tells us the spawn
+date we used so we can reference which date isn’t working if we use an
+string of multiple dates to predict over.</p>
+<p>If fish aren’t hatching they definitely are not going to emerge, so
+we won’t use 2015.</p>
+<div id="looping-1" class="section level3">
+<h3>Looping</h3>
+<p>We will build a nested loop to automate over model selection
+variables and then over the dates. So the order of applying the
+<code>predict_phenology()</code> function in the loop example below is
+as follows:</p>
+<ul>
+<li>Predict hatch
+<ul>
+<li>2011 spawn dates</li>
+<li>…</li>
+<li>2014 spawn dates</li>
+</ul></li>
+<li>Predict emergence
+<ul>
+<li>2011 spawn dates</li>
+<li>…</li>
+<li>2014 spawn dates</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="do">## mini loop to make vector of dates</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>spawn_dates <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="cf">for</span> (year <span class="cf">in</span> <span class="dv">2011</span><span class="sc">:</span><span class="dv">2014</span>) {</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  temp_dates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">paste0</span>(year, <span class="st">&quot;-09-01&quot;</span>), <span class="fu">paste0</span>(year, <span class="st">&quot;-09-15&quot;</span>), <span class="fu">paste0</span>(year, <span class="st">&quot;-09-30&quot;</span>))</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  spawn_dates <span class="ot">&lt;-</span> <span class="fu">c</span>(spawn_dates, temp_dates)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>}</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>spawn_dates</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;2011-09-01&quot; &quot;2011-09-15&quot; &quot;2011-09-30&quot; &quot;2012-09-01&quot; &quot;2012-09-15&quot;</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt;  [6] &quot;2012-09-30&quot; &quot;2013-09-01&quot; &quot;2013-09-15&quot; &quot;2013-09-30&quot; &quot;2014-09-01&quot;</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; [11] &quot;2014-09-15&quot; &quot;2014-09-30&quot;</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="do">### loop for prediction</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>OUT <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="co"># build a counter for adding to our list of lists (OUT)</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="cf">for</span> (mod <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;hatch&quot;</span>, <span class="st">&quot;emerge&quot;</span>)) { <span class="co"># loop for hatch and emerge</span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>  <span class="co"># here we just iterate model selection over the two hatch and emerge options</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>  <span class="co"># in the first for loop</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>  dev_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>    <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>    <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>    <span class="at">model =</span> <span class="st">&quot;MM&quot;</span>,</span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>    <span class="at">development_type =</span> mod</span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>  )</span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a>  <span class="cf">for</span> (d <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(spawn_dates)) { <span class="co"># nested loop over spawn dates</span></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>    <span class="co"># here we iterate over every date of spawn_dates but run this loop twice,</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>    <span class="co"># once for each value of the first for loop</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a>    spawn <span class="ot">&lt;-</span> spawn_dates[d] <span class="co"># get spawn date</span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a>    temp <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(</span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>      <span class="at">data =</span> crooked_river,</span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>      <span class="at">dates =</span> date,</span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>      <span class="at">temperature =</span> temp_c,</span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>      <span class="at">spawn.date =</span> spawn,</span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>      <span class="at">model =</span> dev_mod</span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a>    ) <span class="co"># notice we are calling the mod we set in the fist loop</span></span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a></span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a>    OUT[[i]] <span class="ot">&lt;-</span> temp</span>
+<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a>    i <span class="ot">&lt;-</span> i <span class="sc">+</span> <span class="dv">1</span> <span class="co"># add to your counter</span></span>
+<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a>  }</span>
+<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a>}</span></code></pre></div>
+<p>The output of this loop is again a list of lists. This time 24 lists
+that comprise the elements of each <code>predict_phenology()</code>
+iteration. Simply, the loop selects the hatch model, runs it for every
+date in our vector (<code>spawn_dates</code>) and then switches over to
+an emerge model and does the same thing. The point of having an iterator
+(<code>i</code>) is that we can make a new list addition to
+<code>OUT</code> for every combination of the <code>dev_mod</code>
+(hatch and emerge) and the 12 dates we want to run—resulting in 24 total
+individual lists that are appended to our <code>OUT</code> list of lists
+as we walk through each iteration of the for loop.</p>
+<p>If that sounds a bit complicated, it’s because it is. And this is
+where the vectorized approaches really shine.</p>
+<p>A quick note about accessing lists. Even if you want to write loops
+instead of vectorizing, we do recommend accessing those results via a
+vectorized approach. It’s hard to pull out a lot of information from
+very large nested loops. You would probably write a custom loop to do
+so. However, those results are easily accessed by map, like so:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>mapped_results <span class="ot">&lt;-</span> OUT <span class="sc">|&gt;</span> purrr<span class="sc">:::</span><span class="fu">map_df</span>(<span class="st">&quot;ef_table&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>mapped_results</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3,621 × 5</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt;   index dates               temperature ef_vals ef_cumsum</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;dttm&gt;                    &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; 1   275 2011-09-01 00:00:00        6.65  0.0148    0.0148</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; 2   276 2011-09-02 00:00:00        6.45  0.0144    0.0292</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; 3   277 2011-09-03 00:00:00        6.46  0.0144    0.0436</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; 4   278 2011-09-04 00:00:00        6.66  0.0148    0.0584</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt; 5   279 2011-09-05 00:00:00        6.88  0.0152    0.0736</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; # ℹ 3,616 more rows</span></span></code></pre></div>
+<p>The above code outputs the <code>ef_table</code> element from every
+one of your lists from each combination of spawn date and phenology type
+into a dataframe like object which can then easily be plotted. Notice,
+we now use <code>purrr::map_df()</code> because we know the list element
+we are accessing is in the format of a dataframe type object (a
+tibble).</p>
+</div>
+<div id="vectorizing-1" class="section level3">
+<h3>Vectorizing</h3>
+<p>We’ll use the purrr function <code>purrr::pmap()</code> to vectorize
+our multiple-input map function. Let’s again set up our iterative
+variables. We’ll do the same workflow as the past example but now
+exclusively with mapping.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># slightly cleaner spawn dates with map output is a list of vectors</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>spawn_dates <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2014</span>), <span class="co"># year vector to map for custom function</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="cf">function</span>(year) { <span class="co"># custom function to make dates</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    <span class="fu">c</span>(</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-01&quot;</span>),</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-15&quot;</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-30&quot;</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>    )</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>    }</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>  <span class="fu">unlist</span>()</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>dev_mods <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;hatch&quot;</span>, <span class="st">&quot;emerge&quot;</span>),</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>  model_select,</span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>  )</span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co"># we then set up a variable grid for all combinations of our models and dates</span></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co"># it is very important to make the names of the columns in var_grid to match the</span></span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co"># arguments of the predict_phenology function (e.i., model = and spawn.date =)</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>var_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">model =</span> dev_mods, <span class="at">spawn.date =</span> spawn_dates)</span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="fu">head</span>(var_grid)</span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 2</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt;   model              spawn.date</span></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt;   &lt;list&gt;             &lt;chr&gt;     </span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; 1 &lt;spc_tbl_ [1 × 5]&gt; 2011-09-01</span></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt; 2 &lt;spc_tbl_ [1 × 5]&gt; 2011-09-15</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt; 3 &lt;spc_tbl_ [1 × 5]&gt; 2011-09-30</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt; 4 &lt;spc_tbl_ [1 × 5]&gt; 2012-09-01</span></span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a><span class="co">#&gt; 5 &lt;spc_tbl_ [1 × 5]&gt; 2012-09-15</span></span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a><span class="do">### multiple input mapping</span></span>
+<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a>crooked_predictions <span class="ot">&lt;-</span> <span class="fu">pmap</span>(var_grid, <span class="co"># combos of variables to iterate over</span></span>
+<span id="cb15-41"><a href="#cb15-41" tabindex="-1"></a>  predict_phenology, <span class="co"># function</span></span>
+<span id="cb15-42"><a href="#cb15-42" tabindex="-1"></a>  <span class="at">data =</span> crooked_river, <span class="co"># additional arguments required by function</span></span>
+<span id="cb15-43"><a href="#cb15-43" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb15-44"><a href="#cb15-44" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
+<span id="cb15-45"><a href="#cb15-45" tabindex="-1"></a>)</span></code></pre></div>
+<p>Now that we’ve demonstrated both loops and mapping to get at
+iterating over multiple variables, let’s verify our results match.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># loop predictions</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>preds_loop <span class="ot">&lt;-</span> OUT <span class="sc">|&gt;</span> <span class="fu">map_dbl</span>(<span class="st">&quot;days_to_develop&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>preds_pmap <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span> <span class="fu">map_dbl</span>(<span class="st">&quot;days_to_develop&quot;</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co"># everything matches!</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>preds_loop <span class="sc">==</span> preds_pmap</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt;  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt; [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE</span></span></code></pre></div>
+</div>
+<div id="getting-usable-output" class="section level3">
+<h3>Getting usable output</h3>
+<p>Because the basic output of these iterative processes are big lists
+of lists, it can be a little annoying to access all that data. However,
+this is again where the different flavors of map can be our friend.
+We’ve already shown examples of how to access the predictions, but
+<code>predict_phenology()</code> outputs much more data than just point
+estimates.</p>
+<p>First we’ll demonstrate an example of how we can take those
+prediction and use them to create an object that’s useful for
+plotting.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># get predictions</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>days <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="fu">map_dbl</span>(<span class="st">&quot;days_to_develop&quot;</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co"># make a vector of what type of phenology we were predicting</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co"># remember we ran hatch over 15 spawn dates then emerge over those same 15</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>phenology <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;hatch&quot;</span>, <span class="dv">12</span>), <span class="fu">rep</span>(<span class="st">&quot;emerge&quot;</span>, <span class="dv">12</span>))</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="co"># make a vector of our spawn dates replicated twice and turn into a timepoint</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>spawning <span class="ot">&lt;-</span> <span class="fu">rep</span>(spawn_dates, <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>  <span class="fu">ymd</span>(<span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>) <span class="co"># we do this because the crooked_river dataset is ymd_hms</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co"># put them all together in an object</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>bull_trout_phenology <span class="ot">&lt;-</span> <span class="fu">tibble</span>(phenology, spawning, days)</span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="fu">head</span>(bull_trout_phenology)</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 3</span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt;   phenology spawning             days</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;dttm&gt;              &lt;dbl&gt;</span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; 1 hatch     2011-09-01 00:00:00    88</span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a><span class="co">#&gt; 2 hatch     2011-09-15 00:00:00   106</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; 3 hatch     2011-09-30 00:00:00   124</span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="co">#&gt; 4 hatch     2012-09-01 00:00:00    89</span></span>
+<span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a><span class="co">#&gt; 5 hatch     2012-09-15 00:00:00   104</span></span>
+<span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span></code></pre></div>
+<p>We could then make a plot with our original data:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># filter crooked_river to correct size</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>crooked_river_11_15 <span class="ot">&lt;-</span> crooked_river <span class="sc">|&gt;</span> <span class="fu">filter</span>(date <span class="sc">&lt;</span> <span class="fu">ymd_hms</span>(<span class="st">&quot;2015-06-01 00:00:00&quot;</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> crooked_river_11_15, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">0.25</span>) <span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>    <span class="at">data =</span> bull_trout_phenology,</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> spawning, <span class="at">y =</span> <span class="dv">10</span>), <span class="at">color =</span> <span class="st">&quot;darkblue&quot;</span>, <span class="at">shape =</span> <span class="dv">25</span>, <span class="at">size =</span> <span class="fl">2.5</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a>    <span class="at">data =</span> bull_trout_phenology <span class="sc">|&gt;</span> <span class="fu">filter</span>(phenology <span class="sc">==</span> <span class="st">&quot;hatch&quot;</span>),</span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> spawning <span class="sc">+</span> <span class="fu">days</span>(days), <span class="at">y =</span> <span class="dv">0</span>),</span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkgreen&quot;</span>, <span class="at">shape =</span> <span class="dv">24</span>, <span class="at">size =</span> <span class="fl">2.5</span></span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a>    <span class="at">data =</span> bull_trout_phenology <span class="sc">|&gt;</span> <span class="fu">filter</span>(phenology <span class="sc">==</span> <span class="st">&quot;emerge&quot;</span>),</span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> spawning <span class="sc">+</span> <span class="fu">days</span>(days), <span class="at">y =</span> <span class="dv">0</span>),</span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;darkorange&quot;</span>, <span class="at">shape =</span> <span class="dv">24</span>, <span class="at">size =</span> <span class="fl">2.5</span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Crooked River Bull Trout Developmental Phenology&quot;</span>,</span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;Blue = Spawn, Green = Hatch, Orange = Emerge&quot;</span>,</span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Date&quot;</span>,</span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Temperature&quot;</span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>Not the best looking plot, but a good example of how to translate
+output to a visual representation. For better looking plots, please see
+the <a href="https://bmait101.github.io/hatchR/articles/Advanced_plotting.html">Advanced
+plotting</a> vignette.</p>
+<p>Other data types you might want might include the tibble with dates,
+temperature, and values and cumulative sums of effective values or the,
+alternatively, the developmental period.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># the tibble with all temperature and effective values for each phenological period</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;ef_table&quot;</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="fu">head</span>(all_data)</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 5</span></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="co">#&gt;   index dates               temperature ef_vals ef_cumsum</span></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;dttm&gt;                    &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="co">#&gt; 1   275 2011-09-01 00:00:00        6.65  0.0148    0.0148</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a><span class="co">#&gt; 2   276 2011-09-02 00:00:00        6.45  0.0144    0.0292</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co">#&gt; 3   277 2011-09-03 00:00:00        6.46  0.0144    0.0436</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="co">#&gt; 4   278 2011-09-04 00:00:00        6.66  0.0148    0.0584</span></span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a><span class="co">#&gt; 5   279 2011-09-05 00:00:00        6.88  0.0152    0.0736</span></span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a><span class="co"># the phenological durations for each prediction set</span></span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a>development_period <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>)</span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a><span class="fu">head</span>(development_period)</span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a><span class="co">#&gt; 1 2011-09-01 2011-11-27</span></span>
+<span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a><span class="co">#&gt; 2 2011-09-15 2011-12-29</span></span>
+<span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a><span class="co">#&gt; 3 2011-09-30 2012-01-31</span></span>
+<span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a><span class="co">#&gt; 4 2012-09-01 2012-11-28</span></span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a><span class="co">#&gt; 5 2012-09-15 2012-12-27</span></span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a><span class="co">#&gt; 6 2012-09-30 2013-01-29</span></span></code></pre></div>
+</div>
+<div id="naming-your-lists" class="section level3">
+<h3>Naming your lists</h3>
+<p>A problem with this approach is that you end up with very large lists
+of lists without labels which require you to remember the data structure
+you feed to your mapping function. However, purrr does have a method to
+get around this which is the <code>purrr::set_names()</code> function
+which you would pipe into your mapping function.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># to use the simple Iliamna Lake example within a single season</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>WI_named_list <span class="ot">&lt;-</span> WI_spawn_dates <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="fu">set_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  <span class="fu">map</span>(predict_phenology, <span class="co"># note we leave out the input row (WI_spawn_dates) because we are piping it in as input</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>    <span class="at">data =</span> woody_island, <span class="co"># additional arguments required by predict phenology</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>    <span class="at">dates =</span> date,</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>    <span class="at">temperature =</span> temp_c,</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>    <span class="at">model =</span> sockeye_hatch_mod</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>  )</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co"># you can now see each list is named according to its respective spawn date</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="fu">glimpse</span>(WI_named_list)</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&gt; List of 3</span></span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="co">#&gt;  $ 1990-08-14:List of 4</span></span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 71</span></span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-14&quot;</span></span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-23&quot;</span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [71 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb20-26"><a href="#cb20-26" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb20-27"><a href="#cb20-27" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb20-28"><a href="#cb20-28" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb20-29"><a href="#cb20-29" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb20-30"><a href="#cb20-30" tabindex="-1"></a><span class="co">#&gt;  $ 1990-08-18:List of 4</span></span>
+<span id="cb20-31"><a href="#cb20-31" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 74</span></span>
+<span id="cb20-32"><a href="#cb20-32" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb20-33"><a href="#cb20-33" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-08-18&quot;</span></span>
+<span id="cb20-34"><a href="#cb20-34" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-10-30&quot;</span></span>
+<span id="cb20-35"><a href="#cb20-35" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [74 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-36"><a href="#cb20-36" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt; </span></span>
+<span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a><span class="co">#&gt;  $ 1990-09-3 :List of 4</span></span>
+<span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="co">#&gt;   ..$ days_to_develop: int 110</span></span>
+<span id="cb20-48"><a href="#cb20-48" tabindex="-1"></a><span class="co">#&gt;   ..$ dev.period     :&#39;data.frame&#39;:  1 obs. of  2 variables:</span></span>
+<span id="cb20-49"><a href="#cb20-49" tabindex="-1"></a><span class="co">#&gt;   .. ..$ start: Date[1:1], format: &quot;1990-09-03&quot;</span></span>
+<span id="cb20-50"><a href="#cb20-50" tabindex="-1"></a><span class="co">#&gt;   .. ..$ stop : Date[1:1], format: &quot;1990-12-21&quot;</span></span>
+<span id="cb20-51"><a href="#cb20-51" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_table       : tibble [110 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-52"><a href="#cb20-52" tabindex="-1"></a><span class="co">#&gt;   ..$ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb20-53"><a href="#cb20-53" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb20-54"><a href="#cb20-54" tabindex="-1"></a><span class="co">#&gt;   .. .. .. cols(</span></span>
+<span id="cb20-55"><a href="#cb20-55" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   author = col_character(),</span></span>
+<span id="cb20-56"><a href="#cb20-56" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   species = col_character(),</span></span>
+<span id="cb20-57"><a href="#cb20-57" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   model_id = col_character(),</span></span>
+<span id="cb20-58"><a href="#cb20-58" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   development_type = col_character(),</span></span>
+<span id="cb20-59"><a href="#cb20-59" tabindex="-1"></a><span class="co">#&gt;   .. .. ..   expression = col_character()</span></span>
+<span id="cb20-60"><a href="#cb20-60" tabindex="-1"></a><span class="co">#&gt;   .. .. .. )</span></span>
+<span id="cb20-61"><a href="#cb20-61" tabindex="-1"></a><span class="co">#&gt;   .. ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</span></span>
+<span id="cb20-62"><a href="#cb20-62" tabindex="-1"></a></span>
+<span id="cb20-63"><a href="#cb20-63" tabindex="-1"></a><span class="co"># therefore a single element could be accessed with its name and the $ operator</span></span>
+<span id="cb20-64"><a href="#cb20-64" tabindex="-1"></a><span class="co"># if we wanted the dev.period for fish spawning on August 18th we would do the following</span></span>
+<span id="cb20-65"><a href="#cb20-65" tabindex="-1"></a></span>
+<span id="cb20-66"><a href="#cb20-66" tabindex="-1"></a>WI_named_list<span class="sc">$</span><span class="st">`</span><span class="at">1990-08-18</span><span class="st">`</span><span class="sc">$</span>dev.period</span>
+<span id="cb20-67"><a href="#cb20-67" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb20-68"><a href="#cb20-68" tabindex="-1"></a><span class="co">#&gt; 1 1990-08-18 1990-10-30</span></span></code></pre></div>
+<p>This approach works well for the example above, but not so well with
+our examples with <code>purrr::pmap()</code> because the variable grid
+we create has a bunch of expressions which don’t work for naming lists.
+However, if we were to do a <code>purrr::pmap()</code> example where it
+was a site x dates combination, that still work and would name the lists
+according to their site and then the date used to predict phenology
+(e.g. <code>named_list$site1$`date`$dev.period</code>)</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-sparks2019" class="csl-entry">
+Sparks, Morgan M., Jeffrey A. Falke, Thomas P. Quinn, Milo D. Adkison,
+Daniel E. Schindler, Krista Bartz, Dan Young, and Peter A. H. Westley.
+2019. <span>“Influences of Spawning Timing, Water Temperature, and
+Climatic Warming on Early Life History Phenology in Western Alaska
+Sockeye Salmon.”</span> <em>Canadian Journal of Fisheries and Aquatic
+Sciences</em> 76 (1): 123–35. <a href="https://doi.org/10.1139/cjfas-2017-0468">https://doi.org/10.1139/cjfas-2017-0468</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

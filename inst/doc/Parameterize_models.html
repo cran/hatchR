@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Parameterize hatchR Models</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Parameterize hatchR Models</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>This vignette describes two options for selecting parameterized
+models for predicting fish early life history phenology using
+<strong>hatchR</strong>:</p>
+<ol style="list-style-type: decimal">
+<li>model parameterizations included in the package</li>
+<li>custom parameterizations using your own data (i.e., days to hatch or
+emerge and average incubation temperature)</li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(hatchR)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+</div>
+<div id="built-in-parameterizations" class="section level1">
+<h1>Built-in parameterizations</h1>
+<p>Published model parameterizations are contained in the
+<code>model_table</code> object. This includes parameterizations for
+several salmonid species from hatchery studies relating temperature to
+hatch and emergence timing <span class="citation">Sparks et al.
+(2019)</span>, and can be selected using
+<code>hatchR::model_select()</code>.</p>
+<p>These models are parameterized to 50% hatch or emergence (see <span class="citation">Velsen (1987)</span> for details). It is important to
+remember that while these models predict a point estimate, hatch and
+emergence, even within a single spawning family would occur as a
+distribution of the phenological event.</p>
+<div id="model_table" class="section level2">
+<h2><code>model_table</code></h2>
+<p><code>model_table</code> is loaded with <strong>hatchR</strong>, and
+is a tibble with 51 rows and 5 columns:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>model_table</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 51 × 5</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;   author                  species model_id development_type expression          </span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;               </span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 1 Beacham and Murray 1990 sockeye 2        hatch            1 /exp(6.727 - log(…</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; 2 Beacham and Murray 1990 sockeye 4        hatch            1/exp(8.734 + (-1.5…</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 3 Beacham and Murray 1990 sockeye 5        hatch            1/exp(9.848 + (-1.5…</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; 4 Beacham and Murray 1990 sockeye 7        hatch            1/exp(5.379 + (-0.0…</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 5 Beacham and Murray 1990 sockeye 2        emerge           1 / exp(7.227 - log…</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; # ℹ 46 more rows</span></span></code></pre></div>
+<ul>
+<li><code>author</code>: author-date key denoting publication containing
+the model parameterization</li>
+<li><code>species</code>: the species the model is parameterized
+for</li>
+<li><code>model</code>: the model ID (if multiple model
+parameterizations were built (<em>e.g.</em>, <span class="citation">Beacham and Murray (1990)</span>)</li>
+<li><code>development_type</code>: the phenological development type
+(<em>i.e.</em>, hatch or emerge)</li>
+<li><code>expression</code>: a character string defining the model
+parameterization</li>
+</ul>
+</div>
+<div id="model_select" class="section level2">
+<h2><code>model_select()</code></h2>
+<p>Combinations of <code>author</code>, <code>species</code>,
+<code>model</code>, and <code>development_type</code> are unique and
+used to select parameterized model expressions. For instance, if you
+wanted to access the expression for sockeye salmon (<em>Oncorhynchus
+nerka</em>) hatch phenology using model #2 from <span class="citation">Beacham and Murray (1990)</span>, you would run:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>sockeye_hatch_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Beacham and Murray 1990&quot;</span>, </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;sockeye&quot;</span>, </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">model =</span> <span class="dv">2</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  )</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>sockeye_hatch_mod</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   author                  species model_id development_type expression          </span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;               </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; 1 Beacham and Murray 1990 sockeye 2        hatch            1 /exp(6.727 - log(…</span></span></code></pre></div>
+<p>Note, that the above arguments are equivalent to the first line and
+four columns from <code>model_table</code>. Your model function
+object—in this case <code>sockeye_hatch_mod</code>—can then be passed to
+<code>predict_phenology()</code>, which we will demonstrate in the <a href="https://bmait101.github.io/hatchR/articles/Predict_phenology_basic.html">Predict
+Phenology: Basic</a> vignette.</p>
+<p>To see all available characterizations use:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">View</span>(model_table)</span></code></pre></div>
+</div>
+</div>
+<div id="creating-custom-models" class="section level1">
+<h1>Creating custom models</h1>
+<p><strong>hatchR</strong> also includes basic functionality to generate
+your own model parameterizations for predicting hatching and emergence
+phenology using your own data. <strong>Importantly</strong>, this
+functionality implements <strong><em>model form #2</em></strong> of
+<span class="citation">Beacham and Murray (1990)</span>, which we chose
+because of its overall simplicity and negligible loss of accuracy. See
+<span class="citation">Beacham and Murray (1990)</span> and <span class="citation">Sparks et al. (2019)</span> for more specific
+discussion regarding model #2 and the development of the effective value
+approach.</p>
+<p>The model follows the general format of:</p>
+<p><span class="math display">\[
+Effective Value_i = 1/exp(log_ea - log_e(Temperature_i - b))
+\]</span></p>
+<p>Where <em>i</em> is the daily value and a fish hatches or emerges
+when the cumulative sum reaches one: <span class="math display">\[\sum_{i =1}^nEffectiveValue_i = 1\]</span></p>
+<div id="fit_model" class="section level2">
+<h2><code>fit_model()</code></h2>
+<p>The function <code>fit_model()</code> uses data in which average
+incubation temperature (°C) and days to phenological event are the
+inputs and estimates parameter coefficients for
+<em>log<sub>e</sub>a</em> and <em>b</em> using
+<code>stats::nls()</code>.</p>
+<p>Here, we borrow data from Table 8.1 (pg. 183) from <span class="citation">Quinn (2018)</span> to generate a custom hatch
+parameterization for brown trout (<em>Salmo trutta</em>).</p>
+<p>You could either create a .csv file with those data and import them
+with <code>readr::read_csv()</code> or alternatively, directly input
+them as an object in R. We’ll use <code>tibble::tibble()</code> to
+create the data.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>bt_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">temperature =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">8</span>,<span class="dv">11</span>,<span class="dv">14</span>), </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">days_to_hatch =</span> <span class="fu">c</span>(<span class="dv">194</span>,<span class="dv">87</span>,<span class="dv">54</span>,<span class="dv">35</span>,<span class="dv">28</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  )</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>bt_data</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 5 × 2</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;   temperature days_to_hatch</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;         &lt;dbl&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 1           2           194</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; 2           5            87</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 3           8            54</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; 4          11            35</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; 5          14            28</span></span></code></pre></div>
+<p>We can plot our data for a validity check using
+<strong>ggplot2</strong>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>bt_data <span class="sc">|&gt;</span> </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> temperature, <span class="at">y =</span> days_to_hatch)) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>We can now use <code>fit_model()</code> to create our custom
+parameterization from our data. You must specify a species and a
+development type, information which is carried forward in subsequent
+functions in <strong>hatchR</strong>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>bt_fit <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="at">temp =</span> bt_data<span class="sc">$</span>temperature, </span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                    <span class="at">days =</span> bt_data<span class="sc">$</span>days_to_hatch, </span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                    <span class="at">species =</span> <span class="st">&quot;brown_trout&quot;</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                    <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>)</span></code></pre></div>
+<p>The output of <code>fit_model()</code> is a list with several
+elements:</p>
+<ul>
+<li><code>bt_fit$model</code>: a model object of class “nls” containing
+the nonlinear regression model</li>
+<li><code>bt_fit$log_a</code>: a named numeric vector of the estimated
+coefficient <em>log<sub>e</sub>a</em></li>
+<li><code>bt_fit$b</code>: a named numeric vector of the estimated
+coefficient <em>b</em></li>
+<li><code>bt_fit$r_squared</code>: pseudo R-squared value (1 - (residual
+sum of squares / total sum of squares))</li>
+<li><code>bt_fit$mse</code>: mean squared error (mean(residuals^2))</li>
+<li><code>bt_fit$rmse</code>: root mean squared error (sqrt(mse)</li>
+<li><code>bt_fit$expression</code>: a tibble with the species,
+development type, and the parameterized model expression</li>
+<li><code>bt_fit$pred_plot</code>: a ggplot object showing the observed
+data and predicted values</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>bt_fit</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; $model</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; Nonlinear regression model</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;   model: y ~ a/(x - b)</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;    data: df</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt;        a        b </span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; 439.1634  -0.2582 </span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt;  residual sum-of-squares: 36.92</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; Number of iterations to convergence: 5 </span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; Achieved convergence tolerance: 2.812e-07</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; $log_a</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; [1] 6.084872</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; $b</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; [1] -0.258236</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; $r_squared</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; [1] 0.9979987</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; $mse</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; [1] 7.38454</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; $rmse</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; [1] 2.717451</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt; $expression</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt;   species     development_type expression                                       </span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;            &lt;chr&gt;                                            </span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; 1 brown_trout hatch            1 / exp(6.08487164096323 - log(x + 0.25823604410…</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; $pred_plot</span></span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>The vast majority of the time, what you will want is the actual
+expression with parameter estimates for use in the
+<code>model = ...</code> argument of <code>predict_phenology()</code>.
+This is stored in the <code>expression</code> element of the list.</p>
+<p>You can either pass this tibble directly with the <code>$</code>
+operator by calling <code>$expression</code> element of the list (e.g.,
+<code>model = bt_fit$expression</code>) or set as an object to pass,
+like so:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>bt_hatch_exp <span class="ot">&lt;-</span> bt_fit<span class="sc">$</span>expression</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>bt_hatch_exp</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt;   species     development_type expression                                       </span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;            &lt;chr&gt;                                            </span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; 1 brown_trout hatch            1 / exp(6.08487164096323 - log(x + 0.25823604410…</span></span></code></pre></div>
+<p><code>predict_phenology()</code> will extract the expression from the
+object and use it to predict phenology. We will demonstrate this in the
+<a href="https://bmait101.github.io/hatchR/articles/Predict_phenology_basic.html">Predict
+phenology: Basic</a> vignette.</p>
+</div>
+<div id="fitting-models-for-other-fishes" class="section level2">
+<h2>Fitting models for other fishes</h2>
+<p>We demonstrate how the <code>fit_model()</code> function may be used
+to create custom parameterizations for species beyond the Salmonids in
+the <code>model_table</code> included in the package. We include
+parameterizations from three warm-water species to demonstrate the
+<code>fit_model()</code> utility for fishes beyond the scope of the
+original effective value approach. These parameterizations are for
+commonly cultured sportfishes including Smallmouth Bass (<em>Micropterus
+dolomieu</em>) <span class="citation">(Webster 1948)</span>, Channel
+Catfish (<em>Ictalurus punctatus</em>) <span class="citation">(Small and
+Bates 2001)</span> , and Lake Sturgeon (<em>Acipenser fulvescens</em>)
+<span class="citation">(Smith and King 2005)</span>.</p>
+<p>We demonstrate the utility of this approach by creating a random
+thermal regime with an ascending thermograph with a mean temperature of
+16 °C, parameterizing models for each species, and demonstrating days to
+hatch and developmental period for each species with the random thermal
+regime .</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">###  make temp regime</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co"># create random temps and corresponding dates</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>temps_sim <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">rnorm</span>(<span class="at">n =</span><span class="dv">30</span>, <span class="at">mean =</span> <span class="dv">16</span>, <span class="at">sd =</span> <span class="dv">1</span>), <span class="at">decreasing =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>dates_sim <span class="ot">&lt;-</span>  <span class="fu">seq</span>(<span class="at">from =</span> <span class="fu">ymd</span>(<span class="st">&quot;2000-07-01&quot;</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>             <span class="at">to =</span> <span class="fu">ymd</span>(<span class="st">&quot;2000-07-31&quot;</span>), <span class="at">length.out =</span> <span class="dv">30</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>data_sim <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">30</span>, <span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">data.frame</span>()</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>data_sim[,<span class="dv">1</span>] <span class="ot">&lt;-</span> temps_sim</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>data_sim[,<span class="dv">2</span>] <span class="ot">&lt;-</span> dates_sim</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co"># change names so they aren&#39;t the same as the vector objects</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="fu">colnames</span>(data_sim) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;temp_sim&quot;</span>, <span class="st">&quot;date_sim&quot;</span>)</span></code></pre></div>
+<p>Next we’ll parameterize our models for the three different fishes</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="do">### smallmouth mod</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>smallmouth <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">10</span>, <span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">data.frame</span>()</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="fu">colnames</span>(smallmouth) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;hours&quot;</span>, <span class="st">&quot;temp_F&quot;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>smallmouth<span class="sc">$</span>hours <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">52</span>, <span class="dv">54</span>, <span class="dv">70</span>, <span class="dv">78</span>, <span class="dv">90</span>, <span class="dv">98</span>, <span class="dv">150</span>, <span class="dv">167</span>, <span class="dv">238</span>, <span class="dv">234</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>smallmouth<span class="sc">$</span>temp_F <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">77</span>, <span class="dv">75</span>, <span class="dv">71</span>, <span class="dv">70</span>, <span class="dv">67</span>, <span class="dv">65</span>, <span class="dv">60</span>, <span class="dv">59</span>, <span class="dv">55</span>, <span class="dv">55</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co"># change °F to °C and hours to days</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>smallmouth <span class="ot">&lt;-</span> smallmouth <span class="sc">|&gt;</span> </span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">days =</span> <span class="fu">ceiling</span>(hours<span class="sc">/</span><span class="dv">24</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>         <span class="at">temp_C =</span> (temp_F <span class="sc">-</span><span class="dv">32</span>) <span class="sc">*</span> (<span class="dv">5</span><span class="sc">/</span><span class="dv">9</span>))</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co"># model object for smallmouth bass </span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>smb_mod <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="at">temp =</span> smallmouth<span class="sc">$</span>temp_C,</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>                     <span class="at">days =</span> smallmouth<span class="sc">$</span>days,</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>                     <span class="at">species =</span> <span class="st">&quot;smb&quot;</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>                     <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="do">### catfish mod</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>catfish <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">3</span>, <span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">data.frame</span>()</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="fu">colnames</span>(catfish) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;days&quot;</span>, <span class="st">&quot;temp_C&quot;</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>catfish<span class="sc">$</span>days <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">16</span>,<span class="dv">21</span>,<span class="dv">26</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>catfish<span class="sc">$</span>temp_C <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">22</span>,<span class="dv">10</span>,<span class="dv">7</span>)</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>cat_mod <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="at">temp =</span> catfish<span class="sc">$</span>temp_C,</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>                     <span class="at">days =</span> catfish<span class="sc">$</span>days,</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>                     <span class="at">species =</span> <span class="st">&quot;catfish&quot;</span>,</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>                     <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>)</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="do">### lake sturgeon mod</span></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>sturgeon <span class="ot">&lt;-</span>  <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">7</span>, <span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">data.frame</span>()</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="fu">colnames</span>(sturgeon) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;days&quot;</span>, <span class="st">&quot;CTU&quot;</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>sturgeon<span class="sc">$</span>days <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">7</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">11</span>,<span class="dv">7</span>)</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>sturgeon<span class="sc">$</span>CTU <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">58.1</span>, <span class="fl">62.2</span>, <span class="fl">61.1</span>, <span class="fl">57.5</span>, <span class="fl">58.1</span>, <span class="fl">71.4</span>, <span class="fl">54.7</span>)</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>sturgeon <span class="ot">&lt;-</span> sturgeon <span class="sc">|&gt;</span> </span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">temp_C =</span> CTU<span class="sc">/</span>days) <span class="co"># change CTUs to average temp and add column</span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a>sturgeon_mod <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="at">days =</span> sturgeon<span class="sc">$</span>days,</span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a>                          <span class="at">temp =</span> sturgeon<span class="sc">$</span>temp_C,</span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a>                          <span class="at">species =</span> <span class="st">&quot;sturgeon&quot;</span>,</span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a>                          <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>)</span></code></pre></div>
+<p>Note the <em>R<sup>2</sup></em> fit from the models below. You can
+see they generally all preform well and are in line with values from
+model 2 of <span class="citation">Beacham and Murray (1990)</span>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co">#model fits</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>smb_mod<span class="sc">$</span>r_squared; cat_mod<span class="sc">$</span>r_squared; sturgeon_mod<span class="sc">$</span>r_squared</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.9868067</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; [1] 0.9433598</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; [1] 0.9217358</span></span></code></pre></div>
+<p>After we have our fits for each species we can predict phenology
+using our <code>data_sim</code> datset we created above.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="do">### predict_phenology</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#smallmouth bass</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>smb_res <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(<span class="at">data =</span> data_sim,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>                  <span class="at">dates =</span> date_sim,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>                  <span class="at">temperature =</span> temp_sim,</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>                  <span class="at">spawn.date =</span> <span class="st">&quot;2000-07-01&quot;</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>                  <span class="at">model =</span> smb_mod<span class="sc">$</span>expression)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># catfish</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>catfish_res <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(<span class="at">data =</span> data_sim,</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>                  <span class="at">dates =</span> date_sim,</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>                  <span class="at">temperature =</span> temp_sim,</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>                  <span class="at">spawn.date =</span> <span class="st">&quot;2000-07-01&quot;</span>,</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>                  <span class="at">model =</span> cat_mod<span class="sc">$</span>expression)</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co"># sturgeon</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co"># note that 16 C is pretty far out of range of temps for model fit, not best practice</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>sturgeon_res <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(<span class="at">data =</span> data_sim,</span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>                  <span class="at">dates =</span> date_sim,</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>                  <span class="at">temperature =</span> temp_sim,</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>                  <span class="at">spawn.date =</span> <span class="st">&quot;2000-07-01&quot;</span>,</span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>                  <span class="at">model =</span> sturgeon_mod<span class="sc">$</span>expression)</span></code></pre></div>
+<p>After we have our predictions we’ll combine our results and do a
+little data cleaning.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># summary for all species</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>all_res <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">3</span>, <span class="dv">2</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">colnames</span>(all_res) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;start&quot;</span>, <span class="st">&quot;stop&quot;</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>all_res<span class="sc">$</span>start <span class="ot">&lt;-</span> <span class="fu">c</span>(catfish_res<span class="sc">$</span>dev.period<span class="sc">$</span>start, </span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>                   smb_res<span class="sc">$</span>dev.period<span class="sc">$</span>start, </span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>                   sturgeon_res<span class="sc">$</span>dev.period<span class="sc">$</span>start)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>all_res<span class="sc">$</span>stop <span class="ot">&lt;-</span> <span class="fu">c</span>(catfish_res<span class="sc">$</span>dev.period<span class="sc">$</span>stop,</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>                  smb_res<span class="sc">$</span>dev.period<span class="sc">$</span>stop, </span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>                  sturgeon_res<span class="sc">$</span>dev.period<span class="sc">$</span>stop)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>all_res <span class="ot">&lt;-</span> all_res <span class="sc">|&gt;</span> </span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">days =</span> <span class="fu">ceiling</span>(stop<span class="sc">-</span>start),</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>         <span class="at">index =</span> <span class="fu">c</span>(<span class="dv">17</span>,<span class="fl">16.5</span>,<span class="dv">16</span>)) <span class="co"># index for our horizontal bars</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>all_res<span class="sc">$</span>Species <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Channel Catfish&quot;</span>, <span class="st">&quot;Smallmouth Bass&quot;</span>, <span class="st">&quot;Lake Sturgeon&quot;</span>)</span></code></pre></div>
+<p>And then finally we can plot our results.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> data_sim, <span class="fu">aes</span>(<span class="at">x =</span> date_sim, <span class="at">y =</span> temp_sim )) <span class="sc">+</span> </span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> data_sim, <span class="fu">aes</span>(<span class="at">x =</span> date_sim, <span class="at">y =</span> temp_sim )) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> all_res, <span class="fu">aes</span>(<span class="at">xmin =</span> start, <span class="at">xmax =</span> stop, <span class="at">ymax =</span>index<span class="fl">-.35</span>, <span class="at">ymin =</span> index<span class="fl">-.5</span>, <span class="at">fill =</span> Species)) <span class="sc">+</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">data =</span> all_res, <span class="fu">aes</span>(<span class="at">x =</span> start <span class="sc">+</span> (stop <span class="sc">-</span> start) <span class="sc">/</span> <span class="fl">1.25</span>, <span class="at">y =</span> (index <span class="sc">-</span><span class="fl">0.425</span>), <span class="at">label =</span> days)) <span class="sc">+</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Temperature (°C)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;deepskyblue4&quot;</span>, <span class="st">&quot;grey23&quot;</span>, <span class="st">&quot;darkolivegreen4&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(<span class="fl">0.75</span>, <span class="fl">0.25</span>))</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="important-considerations" class="section level1">
+<h1>Important considerations</h1>
+<p>Here are some important considerations:</p>
+<blockquote>
+<p><em>Your model fits will only be as good as the data they are
+generated from</em>.</p>
+</blockquote>
+<ol style="list-style-type: decimal">
+<li><p>We recommend a minimum of four temperature x hatch/emerge data
+points.</p></li>
+<li><p>Data should be spread across temperatures as much as
+possible.</p>
+<ul>
+<li>It’s much better to have a fit derived from data for temperatures
+such as 3, 7, 10, 14 °C than it is 8, 9, 10, 11 °C.</li>
+<li>The behavior of the model function around the tails of very cold or
+warm temperatures (relative to the fish species) drive the fit of the
+function, so more extreme temperatures are helpful.</li>
+</ul></li>
+<li><p>Think hard about whether the data you are generating your
+parameterization from match the data from which you are trying to
+predict or if you are extrapolating beyond what is sensible for the
+model.</p></li>
+<li><p>Understand your response variable, most models are fit to 50%
+hatch or emergence for a family group or population. However, your data
+may be different and you should interpret your results accordingly
+(e.g. comparisons between 50% hatch from population A to 95% hatch of
+population B may not be reasonable).</p></li>
+</ol>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-austin2019" class="csl-entry">
+Austin, Catherine S., Timothy E. Essington, and Thomas P. Quinn. 2019.
+<span>“Spawning and Emergence Phenology of Bull Trout (Salvelinus
+Confluentus) Under Differing Thermal Regimes.”</span> <em>Journal of
+Fish Biology</em> 94 (1): 191–95. <a href="https://doi.org/10.1111/jfb.13864">https://doi.org/10.1111/jfb.13864</a>.
+</div>
+<div id="ref-beacham1990" class="csl-entry">
+Beacham, Terry D., and Clyde B. Murray. 1990. <span>“Temperature, Egg
+Size, and Development of Embryos and Alevins of Five Species of Pacific
+Salmon: A Comparative Analysis.”</span> <em>Transactions of the American
+Fisheries Society</em> 119 (6): 927–45. <a href="https://doi.org/10.1577/1548-8659(1990)119&lt;0927:TESADO&gt;2.3.CO;2">https://doi.org/10.1577/1548-8659(1990)119&lt;0927:TESADO&gt;2.3.CO;2</a>.
+</div>
+<div id="ref-quinn2018" class="csl-entry">
+Quinn, Thomas P. 2018. <em>The Behavior and Ecology of Pacific Salmon
+and Trout</em>. University of Washington Press.
+</div>
+<div id="ref-small_effect_2001" class="csl-entry">
+Small, Brian C., and Terry D. Bates. 2001. <span>“Effect of
+<span>Low</span>-<span>Temperature</span> <span>Incubation</span> of
+<span>Channel</span> <span>Catfish</span> <span>Ictalurus</span>
+Punctatus <span>Eggs</span> on <span>Development</span>,
+<span>Survival</span>, and <span>Growth</span>.”</span> <em>Journal of
+the World Aquaculture Society</em> 32 (2): 189–94. <a href="https://doi.org/10.1111/j.1749-7345.2001.tb01094.x">https://doi.org/10.1111/j.1749-7345.2001.tb01094.x</a>.
+</div>
+<div id="ref-smith_dynamics_2005" class="csl-entry">
+Smith, K. M., and D. K. King. 2005. <span>“Dynamics and Extent of Larval
+Lake Sturgeon <span>Acipenser</span> Fulvescens Drift in the
+<span>Upper</span> <span>Black</span> <span>River</span>,
+<span>Michigan</span>.”</span> <em>Journal of Applied Ichthyology</em>
+21 (3): 161–68. <a href="https://doi.org/10.1111/j.1439-0426.2005.00623.x">https://doi.org/10.1111/j.1439-0426.2005.00623.x</a>.
+</div>
+<div id="ref-sparks2019" class="csl-entry">
+Sparks, Morgan M., Jeffrey A. Falke, Thomas P. Quinn, Milo D. Adkison,
+Daniel E. Schindler, Krista Bartz, Dan Young, and Peter A. H. Westley.
+2019. <span>“Influences of Spawning Timing, Water Temperature, and
+Climatic Warming on Early Life History Phenology in Western Alaska
+Sockeye Salmon.”</span> <em>Canadian Journal of Fisheries and Aquatic
+Sciences</em> 76 (1): 123–35. <a href="https://doi.org/10.1139/cjfas-2017-0468">https://doi.org/10.1139/cjfas-2017-0468</a>.
+</div>
+<div id="ref-velsen1987" class="csl-entry">
+Velsen, FPJ. 1987. <span>“Temperature and Incubation in Pacific Salmon
+and Rainbow Trout: Compilation of Data on Median Hatching Time,
+Mortality and Embryonic Staging.”</span> Department of Fisheries;
+Oceans, Fisheries Research Branch, Pacific ….
+</div>
+<div id="ref-webster_relation_1948" class="csl-entry">
+Webster, Dwight A. 1948. <span>“Relation of <span>Temperature</span> to
+<span>Survival</span> and <span>Incubation</span> of the
+<span>Eggs</span> of <span>Smallmouth</span> <span>Bass</span>
+(<span>Micropterus</span> <span>Dolomieu</span>).”</span>
+<em>Transactions of the American Fisheries Society</em> 75 (1): 43–47.
+<a href="https://doi.org/10.1577/1548-8659(1945)75[43:ROTTSA]2.0.CO;2">https://doi.org/10.1577/1548-8659(1945)75[43:ROTTSA]2.0.CO;2</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

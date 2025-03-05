@@ -1,0 +1,324 @@
+---
+title: "Parameterize hatchR Models"
+author: "Morgan Sparks, Bryan M. Maitland"
+bibliography: '`r system.file("references.bib", package="hatchR")`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Parameterize hatchR Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+# rmd style
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  warning = FALSE, 
+  message = FALSE, 
+  fig.align = 'center',
+  fig.width = 6
+)
+options(tibble.print_min = 5, tibble.print_max = 5)
+
+# load packages
+library(hatchR)
+library(tibble)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+```
+
+# Overview
+
+This vignette describes two options for selecting parameterized models for predicting fish early life history phenology using **hatchR**:
+
+1.  model parameterizations included in the package
+2.  custom parameterizations using your own data (i.e., days to hatch or emerge and average incubation temperature)
+
+```{r, eval = FALSE}
+library(hatchR)
+library(tibble)
+library(ggplot2)
+```
+
+# Built-in parameterizations
+
+Published model parameterizations are contained in the `model_table` object. This includes parameterizations for several salmonid species from hatchery studies relating temperature to hatch and emergence timing [@beacham1990, @austin2019, @sparks2019], and can be selected using `hatchR::model_select()`.
+
+These models are parameterized to 50% hatch or emergence (see @velsen1987 for details). It is important to remember that while these models predict a point estimate, hatch and emergence, even within a single spawning family would occur as a distribution of the phenological event.
+
+## `model_table`
+
+`model_table` is loaded with **hatchR**, and is a tibble with 51 rows and 5 columns:
+
+```{r}
+model_table
+```
+
+-   `author`: author-date key denoting publication containing the model parameterization
+-   `species`: the species the model is parameterized for
+-   `model`: the model ID (if multiple model parameterizations were built (*e.g.*, @beacham1990)
+-   `development_type`: the phenological development type (*i.e.*, hatch or emerge)
+-   `expression`: a character string defining the model parameterization
+
+## `model_select()`
+
+Combinations of `author`, `species`, `model`, and `development_type` are unique and used to select parameterized model expressions. For instance, if you wanted to access the expression for sockeye salmon (*Oncorhynchus nerka*) hatch phenology using model #2 from @beacham1990, you would run:
+
+```{r}
+sockeye_hatch_mod <- model_select(
+  author = "Beacham and Murray 1990", 
+  species = "sockeye", 
+  model = 2, 
+  development_type = "hatch"
+  )
+
+sockeye_hatch_mod
+```
+
+Note, that the above arguments are equivalent to the first line and four columns from `model_table`. Your model function object---in this case `sockeye_hatch_mod`---can then be passed to `predict_phenology()`, which we will demonstrate in the [Predict Phenology: Basic](https://bmait101.github.io/hatchR/articles/Predict_phenology_basic.html) vignette.
+
+To see all available characterizations use:
+
+```{r, eval=FALSE}
+View(model_table)
+```
+
+# Creating custom models
+
+**hatchR** also includes basic functionality to generate your own model parameterizations for predicting hatching and emergence phenology using your own data. **Importantly**, this functionality implements ***model form #2*** of @beacham1990, which we chose because of its overall simplicity and negligible loss of accuracy. See @beacham1990 and @sparks2019 for more specific discussion regarding model #2 and the development of the effective value approach.
+
+The model follows the general format of:
+
+$$
+Effective Value_i = 1/exp(log_ea - log_e(Temperature_i - b))
+$$
+
+Where *i* is the daily value and a fish hatches or emerges when the cumulative sum reaches one: $$\sum_{i =1}^nEffectiveValue_i = 1$$
+
+## `fit_model()`
+
+The function `fit_model()` uses data in which average incubation temperature (°C) and days to phenological event are the inputs and estimates parameter coefficients for *log~e~a* and *b* using `stats::nls()`.
+
+Here, we borrow data from Table 8.1 (pg. 183) from @quinn2018 to generate a custom hatch parameterization for brown trout (*Salmo trutta*).
+
+You could either create a .csv file with those data and import them with `readr::read_csv()` or alternatively, directly input them as an object in R. We'll use `tibble::tibble()` to create the data.
+
+```{r}
+bt_data <- tibble(
+  temperature = c(2,5,8,11,14), 
+  days_to_hatch = c(194,87,54,35,28)
+  )
+bt_data
+```
+
+We can plot our data for a validity check using **ggplot2**:
+
+```{r}
+bt_data |> 
+  ggplot(aes(x = temperature, y = days_to_hatch)) +
+  geom_point() +
+  theme_classic()
+```
+
+We can now use `fit_model()` to create our custom parameterization from our data. You must specify a species and a development type, information which is carried forward in subsequent functions in **hatchR**.
+
+```{r}
+bt_fit <- fit_model(temp = bt_data$temperature, 
+                    days = bt_data$days_to_hatch, 
+                    species = "brown_trout", 
+                    development_type = "hatch")
+```
+
+The output of `fit_model()` is a list with several elements:
+
+-   `bt_fit$model`: a model object of class "nls" containing the nonlinear regression model
+-   `bt_fit$log_a`: a named numeric vector of the estimated coefficient *log~e~a*
+-   `bt_fit$b`: a named numeric vector of the estimated coefficient *b*
+-   `bt_fit$r_squared`: pseudo R-squared value (1 - (residual sum of squares / total sum of squares))
+-   `bt_fit$mse`: mean squared error (mean(residuals\^2))
+-   `bt_fit$rmse`: root mean squared error (sqrt(mse)
+-   `bt_fit$expression`: a tibble with the species, development type, and the parameterized model expression
+-   `bt_fit$pred_plot`: a ggplot object showing the observed data and predicted values
+
+```{r}
+bt_fit
+```
+
+The vast majority of the time, what you will want is the actual expression with parameter estimates for use in the `model = ...` argument of `predict_phenology()`. This is stored in the `expression` element of the list.
+
+You can either pass this tibble directly with the `$` operator by calling `$expression` element of the list (e.g., `model = bt_fit$expression`) or set as an object to pass, like so:
+
+```{r}
+bt_hatch_exp <- bt_fit$expression
+bt_hatch_exp
+```
+
+`predict_phenology()` will extract the expression from the object and use it to predict phenology. We will demonstrate this in the [Predict phenology: Basic](https://bmait101.github.io/hatchR/articles/Predict_phenology_basic.html) vignette.
+
+## Fitting models for other fishes
+
+We demonstrate how the `fit_model()` function may be used to create custom parameterizations for species beyond the Salmonids in the `model_table` included in the package. We include parameterizations from three warm-water species to demonstrate the `fit_model()` utility for fishes beyond the scope of the original effective value approach. These parameterizations are for commonly cultured sportfishes including Smallmouth Bass (*Micropterus dolomieu*) [@webster_relation_1948], Channel Catfish (*Ictalurus punctatus*) [@small_effect_2001] , and Lake Sturgeon (*Acipenser fulvescens*) [@smith_dynamics_2005].
+
+We demonstrate the utility of this approach by creating a random thermal regime with an ascending thermograph with a mean temperature of 16 °C, parameterizing models for each species, and demonstrating days to hatch and developmental period for each species with the random thermal regime .
+
+```{r}
+###  make temp regime
+set.seed(123)
+# create random temps and corresponding dates
+temps_sim <- sort(rnorm(n =30, mean = 16, sd = 1), decreasing = FALSE)
+dates_sim <-  seq(from = ymd("2000-07-01"),
+             to = ymd("2000-07-31"), length.out = 30)
+
+data_sim <- matrix(NA, 30, 2) |> data.frame()
+data_sim[,1] <- temps_sim
+data_sim[,2] <- dates_sim
+
+# change names so they aren't the same as the vector objects
+colnames(data_sim) <- c("temp_sim", "date_sim")
+```
+
+Next we'll parameterize our models for the three different fishes
+
+```{r, echo = TRUE}
+
+### smallmouth mod
+smallmouth <- matrix(NA, 10, 2) |> data.frame()
+colnames(smallmouth) <- c("hours", "temp_F")
+smallmouth$hours <- c(52, 54, 70, 78, 90, 98, 150, 167, 238, 234)
+smallmouth$temp_F <- c(77, 75, 71, 70, 67, 65, 60, 59, 55, 55)
+
+# change °F to °C and hours to days
+smallmouth <- smallmouth |> 
+  mutate(days = ceiling(hours/24),
+         temp_C = (temp_F -32) * (5/9))
+
+# model object for smallmouth bass 
+smb_mod <- fit_model(temp = smallmouth$temp_C,
+                     days = smallmouth$days,
+                     species = "smb",
+                     development_type = "hatch")
+
+### catfish mod
+catfish <- matrix(NA, 3, 2) |> data.frame()
+colnames(catfish) <- c("days", "temp_C")
+catfish$days <- c(16,21,26)
+catfish$temp_C <- c(22,10,7)
+
+cat_mod <- fit_model(temp = catfish$temp_C,
+                     days = catfish$days,
+                     species = "catfish",
+                     development_type = "hatch")
+
+### lake sturgeon mod
+sturgeon <-  matrix(NA, 7, 2) |> data.frame()
+colnames(sturgeon) <- c("days", "CTU")
+sturgeon$days <- c(7,5,6,6,5,11,7)
+sturgeon$CTU <- c(58.1, 62.2, 61.1, 57.5, 58.1, 71.4, 54.7)
+
+sturgeon <- sturgeon |> 
+  mutate(temp_C = CTU/days) # change CTUs to average temp and add column
+
+sturgeon_mod <- fit_model(days = sturgeon$days,
+                          temp = sturgeon$temp_C,
+                          species = "sturgeon",
+                          development_type = "hatch")
+
+
+
+```
+
+Note the *R^2^* fit from the models below. You can see they generally all preform well and are in line with values from model 2 of @beacham1990.
+
+```{r, echo = TRUE}
+#model fits
+smb_mod$r_squared; cat_mod$r_squared; sturgeon_mod$r_squared
+
+```
+
+After we have our fits for each species we can predict phenology using our `data_sim` datset we created above.
+
+```{r}
+### predict_phenology
+
+#smallmouth bass
+smb_res <- predict_phenology(data = data_sim,
+                  dates = date_sim,
+                  temperature = temp_sim,
+                  spawn.date = "2000-07-01",
+                  model = smb_mod$expression)
+
+# catfish
+catfish_res <- predict_phenology(data = data_sim,
+                  dates = date_sim,
+                  temperature = temp_sim,
+                  spawn.date = "2000-07-01",
+                  model = cat_mod$expression)
+
+# sturgeon
+# note that 16 C is pretty far out of range of temps for model fit, not best practice
+sturgeon_res <- predict_phenology(data = data_sim,
+                  dates = date_sim,
+                  temperature = temp_sim,
+                  spawn.date = "2000-07-01",
+                  model = sturgeon_mod$expression)
+
+```
+
+After we have our predictions we'll combine our results and do a little data cleaning.
+
+```{r}
+# summary for all species
+all_res <- data.frame(matrix(NA, 3, 2))
+colnames(all_res) <- c("start", "stop")
+
+all_res$start <- c(catfish_res$dev.period$start, 
+                   smb_res$dev.period$start, 
+                   sturgeon_res$dev.period$start)
+
+all_res$stop <- c(catfish_res$dev.period$stop,
+                  smb_res$dev.period$stop, 
+                  sturgeon_res$dev.period$stop)
+
+
+all_res <- all_res |> 
+  mutate(days = ceiling(stop-start),
+         index = c(17,16.5,16)) # index for our horizontal bars
+
+all_res$Species <- c("Channel Catfish", "Smallmouth Bass", "Lake Sturgeon")
+
+```
+
+And then finally we can plot our results.
+
+```{r}
+ggplot() +
+  geom_point(data = data_sim, aes(x = date_sim, y = temp_sim )) + 
+  geom_line(data = data_sim, aes(x = date_sim, y = temp_sim )) +
+  geom_rect(data = all_res, aes(xmin = start, xmax = stop, ymax =index-.35, ymin = index-.5, fill = Species)) +
+  geom_label(data = all_res, aes(x = start + (stop - start) / 1.25, y = (index -0.425), label = days)) +
+  labs(x = "Date", y = "Temperature (°C)") +
+  scale_fill_manual(values = c("deepskyblue4", "grey23", "darkolivegreen4")) +
+  theme_classic() +
+  theme(legend.position = c(0.75, 0.25))
+```
+
+# Important considerations
+
+Here are some important considerations:
+
+> *Your model fits will only be as good as the data they are generated from*.
+
+1.  We recommend a minimum of four temperature x hatch/emerge data points.
+
+2.  Data should be spread across temperatures as much as possible.
+
+    -   It's much better to have a fit derived from data for temperatures such as 3, 7, 10, 14 °C than it is 8, 9, 10, 11 °C.
+    -   The behavior of the model function around the tails of very cold or warm temperatures (relative to the fish species) drive the fit of the function, so more extreme temperatures are helpful.
+
+3.  Think hard about whether the data you are generating your parameterization from match the data from which you are trying to predict or if you are extrapolating beyond what is sensible for the model.
+
+4.  Understand your response variable, most models are fit to 50% hatch or emergence for a family group or population. However, your data may be different and you should interpret your results accordingly (e.g. comparisons between 50% hatch from population A to 95% hatch of population B may not be reasonable).
+
+# References {.unnumbered}

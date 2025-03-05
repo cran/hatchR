@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Predict fish phenology: basic</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Predict fish phenology: basic</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This vignette demonstrates a complete and simple
+<strong>hatchR</strong> workflow. We will use data installed with the
+package from Woody Island in Lake Iliamna, Alaska <span class="citation">(Sparks et al. 2019)</span>, to predict the hatch and
+emergence timing of sockeye salmon (<em>Oncorhynchus nerka</em>).</p>
+<p>If you have not already done so, see the vignettes on <a href="https://bmait101.github.io/hatchR/articles/Introduction.html">data
+checks</a> and <a href="https://bmait101.github.io/hatchR/articles/Parameterize_models.html">model
+parameterization</a>.</p>
+<p>First, we load needed packages:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(hatchR)    <span class="co"># for phenology modeling</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)   <span class="co"># for additional plotting options</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># for date manipulation</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(tibble)    <span class="co"># for tidy tibbles and data manipulation</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(dplyr)     <span class="co"># for data manipulation</span></span></code></pre></div>
+</div>
+<div id="data-checks" class="section level2">
+<h2>Data checks</h2>
+<p>First, let’s check the data to make sure it’s in the right format.
+We’ll print the first few rows and <code>summary()</code> to get a sense
+of the data:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>woody_island</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt;           date      temp_c</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; 1   1990-08-11 25.85000000</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; 2   1990-08-12 23.30833333</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 3   1990-08-13 18.53333333</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; 4   1990-08-14 15.35000000</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 5   1990-08-15 13.96666667</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; 6   1990-08-16 11.35833333</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 7   1990-08-17  9.19166667</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; 8   1990-08-18  9.84166667</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; 9   1990-08-19 10.55000000</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; 10  1990-08-20 10.68333333</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; 11  1990-08-21 11.45000000</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; 12  1990-08-22 11.69166667</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; 13  1990-08-23 11.17500000</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; 14  1990-08-24 11.69166667</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; 15  1990-08-25 11.99166667</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; 16  1990-08-26 11.88333333</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; 17  1990-08-27 12.25000000</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; 18  1990-08-28 12.17500000</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; 19  1990-08-29 12.07500000</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; 20  1990-08-30 12.08333333</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; 21  1990-08-31 12.14166667</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; 22  1990-09-01 12.20000000</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; 23  1990-09-02 11.77500000</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; 24  1990-09-03 11.23333333</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt; 25  1990-09-04 11.35000000</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt; 26  1990-09-05 11.35000000</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#&gt; 27  1990-09-06 11.37500000</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#&gt; 28  1990-09-07 11.40000000</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#&gt; 29  1990-09-08 11.17500000</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#&gt; 30  1990-09-09 10.72500000</span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#&gt; 31  1990-09-10 10.84166667</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#&gt; 32  1990-09-11 10.90000000</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#&gt; 33  1990-09-12 10.04166667</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co">#&gt; 34  1990-09-13 10.20000000</span></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co">#&gt; 35  1990-09-14 10.21666667</span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co">#&gt; 36  1990-09-15 10.46666667</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co">#&gt; 37  1990-09-16  9.24166667</span></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">#&gt; 38  1990-09-17  8.39166667</span></span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a><span class="co">#&gt; 39  1990-09-18  8.65833333</span></span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a><span class="co">#&gt; 40  1990-09-19  9.10833333</span></span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a><span class="co">#&gt; 41  1990-09-20  9.09166667</span></span>
+<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a><span class="co">#&gt; 42  1990-09-21  9.00000000</span></span>
+<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a><span class="co">#&gt; 43  1990-09-22  9.21666667</span></span>
+<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a><span class="co">#&gt; 44  1990-09-23  9.19166667</span></span>
+<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a><span class="co">#&gt; 45  1990-09-24  9.00833333</span></span>
+<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a><span class="co">#&gt; 46  1990-09-25  8.84166667</span></span>
+<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a><span class="co">#&gt; 47  1990-09-26  8.70000000</span></span>
+<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a><span class="co">#&gt; 48  1990-09-27  8.24166667</span></span>
+<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a><span class="co">#&gt; 49  1990-09-28  8.30833333</span></span>
+<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a><span class="co">#&gt; 50  1990-09-29  8.39166667</span></span>
+<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a><span class="co">#&gt; 51  1990-09-30  8.32500000</span></span>
+<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a><span class="co">#&gt; 52  1990-10-01  7.67500000</span></span>
+<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a><span class="co">#&gt; 53  1990-10-02  7.29166667</span></span>
+<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a><span class="co">#&gt; 54  1990-10-03  7.35000000</span></span>
+<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a><span class="co">#&gt; 55  1990-10-04  7.80000000</span></span>
+<span id="cb2-58"><a href="#cb2-58" tabindex="-1"></a><span class="co">#&gt; 56  1990-10-05  8.13333333</span></span>
+<span id="cb2-59"><a href="#cb2-59" tabindex="-1"></a><span class="co">#&gt; 57  1990-10-06  8.26666667</span></span>
+<span id="cb2-60"><a href="#cb2-60" tabindex="-1"></a><span class="co">#&gt; 58  1990-10-07  8.13333333</span></span>
+<span id="cb2-61"><a href="#cb2-61" tabindex="-1"></a><span class="co">#&gt; 59  1990-10-08  7.61666667</span></span>
+<span id="cb2-62"><a href="#cb2-62" tabindex="-1"></a><span class="co">#&gt; 60  1990-10-09  7.43333333</span></span>
+<span id="cb2-63"><a href="#cb2-63" tabindex="-1"></a><span class="co">#&gt; 61  1990-10-10  7.75000000</span></span>
+<span id="cb2-64"><a href="#cb2-64" tabindex="-1"></a><span class="co">#&gt; 62  1990-10-11  7.55000000</span></span>
+<span id="cb2-65"><a href="#cb2-65" tabindex="-1"></a><span class="co">#&gt; 63  1990-10-12  6.90833333</span></span>
+<span id="cb2-66"><a href="#cb2-66" tabindex="-1"></a><span class="co">#&gt; 64  1990-10-13  6.69166667</span></span>
+<span id="cb2-67"><a href="#cb2-67" tabindex="-1"></a><span class="co">#&gt; 65  1990-10-14  6.47500000</span></span>
+<span id="cb2-68"><a href="#cb2-68" tabindex="-1"></a><span class="co">#&gt; 66  1990-10-15  6.07500000</span></span>
+<span id="cb2-69"><a href="#cb2-69" tabindex="-1"></a><span class="co">#&gt; 67  1990-10-16  5.87500000</span></span>
+<span id="cb2-70"><a href="#cb2-70" tabindex="-1"></a><span class="co">#&gt; 68  1990-10-17  6.33333333</span></span>
+<span id="cb2-71"><a href="#cb2-71" tabindex="-1"></a><span class="co">#&gt; 69  1990-10-18  6.45000000</span></span>
+<span id="cb2-72"><a href="#cb2-72" tabindex="-1"></a><span class="co">#&gt; 70  1990-10-19  6.67500000</span></span>
+<span id="cb2-73"><a href="#cb2-73" tabindex="-1"></a><span class="co">#&gt; 71  1990-10-20  6.80000000</span></span>
+<span id="cb2-74"><a href="#cb2-74" tabindex="-1"></a><span class="co">#&gt; 72  1990-10-21  6.29166667</span></span>
+<span id="cb2-75"><a href="#cb2-75" tabindex="-1"></a><span class="co">#&gt; 73  1990-10-22  6.62500000</span></span>
+<span id="cb2-76"><a href="#cb2-76" tabindex="-1"></a><span class="co">#&gt; 74  1990-10-23  6.58333333</span></span>
+<span id="cb2-77"><a href="#cb2-77" tabindex="-1"></a><span class="co">#&gt; 75  1990-10-24  6.45000000</span></span>
+<span id="cb2-78"><a href="#cb2-78" tabindex="-1"></a><span class="co">#&gt; 76  1990-10-25  6.12500000</span></span>
+<span id="cb2-79"><a href="#cb2-79" tabindex="-1"></a><span class="co">#&gt; 77  1990-10-26  5.99166667</span></span>
+<span id="cb2-80"><a href="#cb2-80" tabindex="-1"></a><span class="co">#&gt; 78  1990-10-27  5.20000000</span></span>
+<span id="cb2-81"><a href="#cb2-81" tabindex="-1"></a><span class="co">#&gt; 79  1990-10-28  4.31666667</span></span>
+<span id="cb2-82"><a href="#cb2-82" tabindex="-1"></a><span class="co">#&gt; 80  1990-10-29  4.22500000</span></span>
+<span id="cb2-83"><a href="#cb2-83" tabindex="-1"></a><span class="co">#&gt; 81  1990-10-30  4.24166667</span></span>
+<span id="cb2-84"><a href="#cb2-84" tabindex="-1"></a><span class="co">#&gt; 82  1990-10-31  4.68333333</span></span>
+<span id="cb2-85"><a href="#cb2-85" tabindex="-1"></a><span class="co">#&gt; 83  1990-11-01  5.15833333</span></span>
+<span id="cb2-86"><a href="#cb2-86" tabindex="-1"></a><span class="co">#&gt; 84  1990-11-02  5.01666667</span></span>
+<span id="cb2-87"><a href="#cb2-87" tabindex="-1"></a><span class="co">#&gt; 85  1990-11-03  4.60833333</span></span>
+<span id="cb2-88"><a href="#cb2-88" tabindex="-1"></a><span class="co">#&gt; 86  1990-11-04  3.95833333</span></span>
+<span id="cb2-89"><a href="#cb2-89" tabindex="-1"></a><span class="co">#&gt; 87  1990-11-05  4.46666667</span></span>
+<span id="cb2-90"><a href="#cb2-90" tabindex="-1"></a><span class="co">#&gt; 88  1990-11-06  4.62500000</span></span>
+<span id="cb2-91"><a href="#cb2-91" tabindex="-1"></a><span class="co">#&gt; 89  1990-11-07  3.77500000</span></span>
+<span id="cb2-92"><a href="#cb2-92" tabindex="-1"></a><span class="co">#&gt; 90  1990-11-08  2.49166667</span></span>
+<span id="cb2-93"><a href="#cb2-93" tabindex="-1"></a><span class="co">#&gt; 91  1990-11-09  2.54166667</span></span>
+<span id="cb2-94"><a href="#cb2-94" tabindex="-1"></a><span class="co">#&gt; 92  1990-11-10  2.54166667</span></span>
+<span id="cb2-95"><a href="#cb2-95" tabindex="-1"></a><span class="co">#&gt; 93  1990-11-11  3.21666667</span></span>
+<span id="cb2-96"><a href="#cb2-96" tabindex="-1"></a><span class="co">#&gt; 94  1990-11-12  3.14166667</span></span>
+<span id="cb2-97"><a href="#cb2-97" tabindex="-1"></a><span class="co">#&gt; 95  1990-11-13  3.09166667</span></span>
+<span id="cb2-98"><a href="#cb2-98" tabindex="-1"></a><span class="co">#&gt; 96  1990-11-14  2.70000000</span></span>
+<span id="cb2-99"><a href="#cb2-99" tabindex="-1"></a><span class="co">#&gt; 97  1990-11-15  2.94166667</span></span>
+<span id="cb2-100"><a href="#cb2-100" tabindex="-1"></a><span class="co">#&gt; 98  1990-11-16  2.36666667</span></span>
+<span id="cb2-101"><a href="#cb2-101" tabindex="-1"></a><span class="co">#&gt; 99  1990-11-17  2.57500000</span></span>
+<span id="cb2-102"><a href="#cb2-102" tabindex="-1"></a><span class="co">#&gt; 100 1990-11-18  2.59166667</span></span>
+<span id="cb2-103"><a href="#cb2-103" tabindex="-1"></a><span class="co">#&gt; 101 1990-11-19  2.54166667</span></span>
+<span id="cb2-104"><a href="#cb2-104" tabindex="-1"></a><span class="co">#&gt; 102 1990-11-20  2.50000000</span></span>
+<span id="cb2-105"><a href="#cb2-105" tabindex="-1"></a><span class="co">#&gt; 103 1990-11-21  3.03333333</span></span>
+<span id="cb2-106"><a href="#cb2-106" tabindex="-1"></a><span class="co">#&gt; 104 1990-11-22  2.70000000</span></span>
+<span id="cb2-107"><a href="#cb2-107" tabindex="-1"></a><span class="co">#&gt; 105 1990-11-23  2.28333333</span></span>
+<span id="cb2-108"><a href="#cb2-108" tabindex="-1"></a><span class="co">#&gt; 106 1990-11-24  2.16666667</span></span>
+<span id="cb2-109"><a href="#cb2-109" tabindex="-1"></a><span class="co">#&gt; 107 1990-11-25  1.77500000</span></span>
+<span id="cb2-110"><a href="#cb2-110" tabindex="-1"></a><span class="co">#&gt; 108 1990-11-26  1.46666667</span></span>
+<span id="cb2-111"><a href="#cb2-111" tabindex="-1"></a><span class="co">#&gt; 109 1990-11-27  1.61666667</span></span>
+<span id="cb2-112"><a href="#cb2-112" tabindex="-1"></a><span class="co">#&gt; 110 1990-11-28  0.47500000</span></span>
+<span id="cb2-113"><a href="#cb2-113" tabindex="-1"></a><span class="co">#&gt; 111 1990-11-29  0.52500000</span></span>
+<span id="cb2-114"><a href="#cb2-114" tabindex="-1"></a><span class="co">#&gt; 112 1990-11-30  0.35833333</span></span>
+<span id="cb2-115"><a href="#cb2-115" tabindex="-1"></a><span class="co">#&gt; 113 1990-12-01  0.71666667</span></span>
+<span id="cb2-116"><a href="#cb2-116" tabindex="-1"></a><span class="co">#&gt; 114 1990-12-02  0.49166667</span></span>
+<span id="cb2-117"><a href="#cb2-117" tabindex="-1"></a><span class="co">#&gt; 115 1990-12-03  1.04166667</span></span>
+<span id="cb2-118"><a href="#cb2-118" tabindex="-1"></a><span class="co">#&gt; 116 1990-12-04  1.11666667</span></span>
+<span id="cb2-119"><a href="#cb2-119" tabindex="-1"></a><span class="co">#&gt; 117 1990-12-05  1.02500000</span></span>
+<span id="cb2-120"><a href="#cb2-120" tabindex="-1"></a><span class="co">#&gt; 118 1990-12-06  1.38333333</span></span>
+<span id="cb2-121"><a href="#cb2-121" tabindex="-1"></a><span class="co">#&gt; 119 1990-12-07  1.55833333</span></span>
+<span id="cb2-122"><a href="#cb2-122" tabindex="-1"></a><span class="co">#&gt; 120 1990-12-08  0.82500000</span></span>
+<span id="cb2-123"><a href="#cb2-123" tabindex="-1"></a><span class="co">#&gt; 121 1990-12-09  0.20833333</span></span>
+<span id="cb2-124"><a href="#cb2-124" tabindex="-1"></a><span class="co">#&gt; 122 1990-12-10  0.40000000</span></span>
+<span id="cb2-125"><a href="#cb2-125" tabindex="-1"></a><span class="co">#&gt; 123 1990-12-11  0.78333333</span></span>
+<span id="cb2-126"><a href="#cb2-126" tabindex="-1"></a><span class="co">#&gt; 124 1990-12-12  0.79166667</span></span>
+<span id="cb2-127"><a href="#cb2-127" tabindex="-1"></a><span class="co">#&gt; 125 1990-12-13  0.34166667</span></span>
+<span id="cb2-128"><a href="#cb2-128" tabindex="-1"></a><span class="co">#&gt; 126 1990-12-14  0.09166667</span></span>
+<span id="cb2-129"><a href="#cb2-129" tabindex="-1"></a><span class="co">#&gt; 127 1990-12-15  0.25833333</span></span>
+<span id="cb2-130"><a href="#cb2-130" tabindex="-1"></a><span class="co">#&gt; 128 1990-12-16  0.39166667</span></span>
+<span id="cb2-131"><a href="#cb2-131" tabindex="-1"></a><span class="co">#&gt; 129 1990-12-17  0.02500000</span></span>
+<span id="cb2-132"><a href="#cb2-132" tabindex="-1"></a><span class="co">#&gt; 130 1990-12-18  0.25000000</span></span>
+<span id="cb2-133"><a href="#cb2-133" tabindex="-1"></a><span class="co">#&gt; 131 1990-12-19  0.61666667</span></span>
+<span id="cb2-134"><a href="#cb2-134" tabindex="-1"></a><span class="co">#&gt; 132 1990-12-20  0.85833333</span></span>
+<span id="cb2-135"><a href="#cb2-135" tabindex="-1"></a><span class="co">#&gt; 133 1990-12-21  0.80000000</span></span>
+<span id="cb2-136"><a href="#cb2-136" tabindex="-1"></a><span class="co">#&gt; 134 1990-12-22  1.02500000</span></span>
+<span id="cb2-137"><a href="#cb2-137" tabindex="-1"></a><span class="co">#&gt; 135 1990-12-23  1.06666667</span></span>
+<span id="cb2-138"><a href="#cb2-138" tabindex="-1"></a><span class="co">#&gt; 136 1990-12-24  1.22500000</span></span>
+<span id="cb2-139"><a href="#cb2-139" tabindex="-1"></a><span class="co">#&gt; 137 1990-12-25  1.31666667</span></span>
+<span id="cb2-140"><a href="#cb2-140" tabindex="-1"></a><span class="co">#&gt; 138 1990-12-26  1.00833333</span></span>
+<span id="cb2-141"><a href="#cb2-141" tabindex="-1"></a><span class="co">#&gt; 139 1990-12-27  0.67500000</span></span>
+<span id="cb2-142"><a href="#cb2-142" tabindex="-1"></a><span class="co">#&gt; 140 1990-12-28  1.01666667</span></span>
+<span id="cb2-143"><a href="#cb2-143" tabindex="-1"></a><span class="co">#&gt; 141 1990-12-29  0.84166667</span></span>
+<span id="cb2-144"><a href="#cb2-144" tabindex="-1"></a><span class="co">#&gt; 142 1990-12-30  0.39166667</span></span>
+<span id="cb2-145"><a href="#cb2-145" tabindex="-1"></a><span class="co">#&gt; 143 1990-12-31  0.48333333</span></span>
+<span id="cb2-146"><a href="#cb2-146" tabindex="-1"></a><span class="co">#&gt; 144 1991-01-01  0.70000000</span></span>
+<span id="cb2-147"><a href="#cb2-147" tabindex="-1"></a><span class="co">#&gt; 145 1991-01-02  0.95000000</span></span>
+<span id="cb2-148"><a href="#cb2-148" tabindex="-1"></a><span class="co">#&gt; 146 1991-01-03  0.73333333</span></span>
+<span id="cb2-149"><a href="#cb2-149" tabindex="-1"></a><span class="co">#&gt; 147 1991-01-04  0.78333333</span></span>
+<span id="cb2-150"><a href="#cb2-150" tabindex="-1"></a><span class="co">#&gt; 148 1991-01-05  0.73333333</span></span>
+<span id="cb2-151"><a href="#cb2-151" tabindex="-1"></a><span class="co">#&gt; 149 1991-01-06  0.72500000</span></span>
+<span id="cb2-152"><a href="#cb2-152" tabindex="-1"></a><span class="co">#&gt; 150 1991-01-07  0.95000000</span></span>
+<span id="cb2-153"><a href="#cb2-153" tabindex="-1"></a><span class="co">#&gt; 151 1991-01-08  0.94166667</span></span>
+<span id="cb2-154"><a href="#cb2-154" tabindex="-1"></a><span class="co">#&gt; 152 1991-01-09  0.96666667</span></span>
+<span id="cb2-155"><a href="#cb2-155" tabindex="-1"></a><span class="co">#&gt; 153 1991-01-10  0.95833333</span></span>
+<span id="cb2-156"><a href="#cb2-156" tabindex="-1"></a><span class="co">#&gt; 154 1991-01-11  0.98333333</span></span>
+<span id="cb2-157"><a href="#cb2-157" tabindex="-1"></a><span class="co">#&gt; 155 1991-01-12  0.98333333</span></span>
+<span id="cb2-158"><a href="#cb2-158" tabindex="-1"></a><span class="co">#&gt; 156 1991-01-13  1.04166667</span></span>
+<span id="cb2-159"><a href="#cb2-159" tabindex="-1"></a><span class="co">#&gt; 157 1991-01-14  1.04166667</span></span>
+<span id="cb2-160"><a href="#cb2-160" tabindex="-1"></a><span class="co">#&gt; 158 1991-01-15  1.03333333</span></span>
+<span id="cb2-161"><a href="#cb2-161" tabindex="-1"></a><span class="co">#&gt; 159 1991-01-16  1.01666667</span></span>
+<span id="cb2-162"><a href="#cb2-162" tabindex="-1"></a><span class="co">#&gt; 160 1991-01-17  1.03333333</span></span>
+<span id="cb2-163"><a href="#cb2-163" tabindex="-1"></a><span class="co">#&gt; 161 1991-01-18  1.00000000</span></span>
+<span id="cb2-164"><a href="#cb2-164" tabindex="-1"></a><span class="co">#&gt; 162 1991-01-19  0.89166667</span></span>
+<span id="cb2-165"><a href="#cb2-165" tabindex="-1"></a><span class="co">#&gt; 163 1991-01-20  0.85833333</span></span>
+<span id="cb2-166"><a href="#cb2-166" tabindex="-1"></a><span class="co">#&gt; 164 1991-01-21  0.80833333</span></span>
+<span id="cb2-167"><a href="#cb2-167" tabindex="-1"></a><span class="co">#&gt; 165 1991-01-22  0.82500000</span></span>
+<span id="cb2-168"><a href="#cb2-168" tabindex="-1"></a><span class="co">#&gt; 166 1991-01-23  0.85833333</span></span>
+<span id="cb2-169"><a href="#cb2-169" tabindex="-1"></a><span class="co">#&gt; 167 1991-01-24  0.89166667</span></span>
+<span id="cb2-170"><a href="#cb2-170" tabindex="-1"></a><span class="co">#&gt; 168 1991-01-25  0.91666667</span></span>
+<span id="cb2-171"><a href="#cb2-171" tabindex="-1"></a><span class="co">#&gt; 169 1991-01-26  0.89166667</span></span>
+<span id="cb2-172"><a href="#cb2-172" tabindex="-1"></a><span class="co">#&gt; 170 1991-01-27  0.95000000</span></span>
+<span id="cb2-173"><a href="#cb2-173" tabindex="-1"></a><span class="co">#&gt; 171 1991-01-28  0.99166667</span></span>
+<span id="cb2-174"><a href="#cb2-174" tabindex="-1"></a><span class="co">#&gt; 172 1991-01-29  1.00000000</span></span>
+<span id="cb2-175"><a href="#cb2-175" tabindex="-1"></a><span class="co">#&gt; 173 1991-01-30  1.00833333</span></span>
+<span id="cb2-176"><a href="#cb2-176" tabindex="-1"></a><span class="co">#&gt; 174 1991-01-31  1.03333333</span></span>
+<span id="cb2-177"><a href="#cb2-177" tabindex="-1"></a><span class="co">#&gt; 175 1991-02-01  1.05833333</span></span>
+<span id="cb2-178"><a href="#cb2-178" tabindex="-1"></a><span class="co">#&gt; 176 1991-02-02  1.10000000</span></span>
+<span id="cb2-179"><a href="#cb2-179" tabindex="-1"></a><span class="co">#&gt; 177 1991-02-03  1.07500000</span></span>
+<span id="cb2-180"><a href="#cb2-180" tabindex="-1"></a><span class="co">#&gt; 178 1991-02-04  1.09166667</span></span>
+<span id="cb2-181"><a href="#cb2-181" tabindex="-1"></a><span class="co">#&gt; 179 1991-02-05  1.10000000</span></span>
+<span id="cb2-182"><a href="#cb2-182" tabindex="-1"></a><span class="co">#&gt; 180 1991-02-06  1.09166667</span></span>
+<span id="cb2-183"><a href="#cb2-183" tabindex="-1"></a><span class="co">#&gt; 181 1991-02-07  1.10000000</span></span>
+<span id="cb2-184"><a href="#cb2-184" tabindex="-1"></a><span class="co">#&gt; 182 1991-02-08  1.11666667</span></span>
+<span id="cb2-185"><a href="#cb2-185" tabindex="-1"></a><span class="co">#&gt; 183 1991-02-09  1.10000000</span></span>
+<span id="cb2-186"><a href="#cb2-186" tabindex="-1"></a><span class="co">#&gt; 184 1991-02-10  1.12500000</span></span>
+<span id="cb2-187"><a href="#cb2-187" tabindex="-1"></a><span class="co">#&gt; 185 1991-02-11  1.15833333</span></span>
+<span id="cb2-188"><a href="#cb2-188" tabindex="-1"></a><span class="co">#&gt; 186 1991-02-12  1.29166667</span></span>
+<span id="cb2-189"><a href="#cb2-189" tabindex="-1"></a><span class="co">#&gt; 187 1991-02-13  1.37500000</span></span>
+<span id="cb2-190"><a href="#cb2-190" tabindex="-1"></a><span class="co">#&gt; 188 1991-02-14  1.37500000</span></span>
+<span id="cb2-191"><a href="#cb2-191" tabindex="-1"></a><span class="co">#&gt; 189 1991-02-15  1.47500000</span></span>
+<span id="cb2-192"><a href="#cb2-192" tabindex="-1"></a><span class="co">#&gt; 190 1991-02-16  1.44166667</span></span>
+<span id="cb2-193"><a href="#cb2-193" tabindex="-1"></a><span class="co">#&gt; 191 1991-02-17  1.49166667</span></span>
+<span id="cb2-194"><a href="#cb2-194" tabindex="-1"></a><span class="co">#&gt; 192 1991-02-18  1.58333333</span></span>
+<span id="cb2-195"><a href="#cb2-195" tabindex="-1"></a><span class="co">#&gt; 193 1991-02-19  1.56666667</span></span>
+<span id="cb2-196"><a href="#cb2-196" tabindex="-1"></a><span class="co">#&gt; 194 1991-02-20  1.60000000</span></span>
+<span id="cb2-197"><a href="#cb2-197" tabindex="-1"></a><span class="co">#&gt; 195 1991-02-21  1.59166667</span></span>
+<span id="cb2-198"><a href="#cb2-198" tabindex="-1"></a><span class="co">#&gt; 196 1991-02-22  1.58333333</span></span>
+<span id="cb2-199"><a href="#cb2-199" tabindex="-1"></a><span class="co">#&gt; 197 1991-02-23  1.58333333</span></span>
+<span id="cb2-200"><a href="#cb2-200" tabindex="-1"></a><span class="co">#&gt; 198 1991-02-24  1.53333333</span></span>
+<span id="cb2-201"><a href="#cb2-201" tabindex="-1"></a><span class="co">#&gt; 199 1991-02-25  1.45833333</span></span>
+<span id="cb2-202"><a href="#cb2-202" tabindex="-1"></a><span class="co">#&gt; 200 1991-02-26  1.53333333</span></span>
+<span id="cb2-203"><a href="#cb2-203" tabindex="-1"></a><span class="co">#&gt; 201 1991-02-27  1.72500000</span></span>
+<span id="cb2-204"><a href="#cb2-204" tabindex="-1"></a><span class="co">#&gt; 202 1991-02-28  1.85000000</span></span>
+<span id="cb2-205"><a href="#cb2-205" tabindex="-1"></a><span class="co">#&gt; 203 1991-03-01  2.02500000</span></span>
+<span id="cb2-206"><a href="#cb2-206" tabindex="-1"></a><span class="co">#&gt; 204 1991-03-02  2.14166667</span></span>
+<span id="cb2-207"><a href="#cb2-207" tabindex="-1"></a><span class="co">#&gt; 205 1991-03-03  2.16666667</span></span>
+<span id="cb2-208"><a href="#cb2-208" tabindex="-1"></a><span class="co">#&gt; 206 1991-03-04  2.15000000</span></span>
+<span id="cb2-209"><a href="#cb2-209" tabindex="-1"></a><span class="co">#&gt; 207 1991-03-05  2.15833333</span></span>
+<span id="cb2-210"><a href="#cb2-210" tabindex="-1"></a><span class="co">#&gt; 208 1991-03-06  2.14166667</span></span>
+<span id="cb2-211"><a href="#cb2-211" tabindex="-1"></a><span class="co">#&gt; 209 1991-03-07  2.00000000</span></span>
+<span id="cb2-212"><a href="#cb2-212" tabindex="-1"></a><span class="co">#&gt; 210 1991-03-08  2.02500000</span></span>
+<span id="cb2-213"><a href="#cb2-213" tabindex="-1"></a><span class="co">#&gt; 211 1991-03-09  1.98333333</span></span>
+<span id="cb2-214"><a href="#cb2-214" tabindex="-1"></a><span class="co">#&gt; 212 1991-03-10  2.01666667</span></span>
+<span id="cb2-215"><a href="#cb2-215" tabindex="-1"></a><span class="co">#&gt; 213 1991-03-11  2.04166667</span></span>
+<span id="cb2-216"><a href="#cb2-216" tabindex="-1"></a><span class="co">#&gt; 214 1991-03-12  2.02500000</span></span>
+<span id="cb2-217"><a href="#cb2-217" tabindex="-1"></a><span class="co">#&gt; 215 1991-03-13  2.07500000</span></span>
+<span id="cb2-218"><a href="#cb2-218" tabindex="-1"></a><span class="co">#&gt; 216 1991-03-14  2.00000000</span></span>
+<span id="cb2-219"><a href="#cb2-219" tabindex="-1"></a><span class="co">#&gt; 217 1991-03-15  2.02500000</span></span>
+<span id="cb2-220"><a href="#cb2-220" tabindex="-1"></a><span class="co">#&gt; 218 1991-03-16  1.94166667</span></span>
+<span id="cb2-221"><a href="#cb2-221" tabindex="-1"></a><span class="co">#&gt; 219 1991-03-17  1.94166667</span></span>
+<span id="cb2-222"><a href="#cb2-222" tabindex="-1"></a><span class="co">#&gt; 220 1991-03-18  1.92500000</span></span>
+<span id="cb2-223"><a href="#cb2-223" tabindex="-1"></a><span class="co">#&gt; 221 1991-03-19  1.98333333</span></span>
+<span id="cb2-224"><a href="#cb2-224" tabindex="-1"></a><span class="co">#&gt; 222 1991-03-20  2.05000000</span></span>
+<span id="cb2-225"><a href="#cb2-225" tabindex="-1"></a><span class="co">#&gt; 223 1991-03-21  2.10000000</span></span>
+<span id="cb2-226"><a href="#cb2-226" tabindex="-1"></a><span class="co">#&gt; 224 1991-03-22  2.15000000</span></span>
+<span id="cb2-227"><a href="#cb2-227" tabindex="-1"></a><span class="co">#&gt; 225 1991-03-23  2.15833333</span></span>
+<span id="cb2-228"><a href="#cb2-228" tabindex="-1"></a><span class="co">#&gt; 226 1991-03-24  2.30000000</span></span>
+<span id="cb2-229"><a href="#cb2-229" tabindex="-1"></a><span class="co">#&gt; 227 1991-03-25  2.35833333</span></span>
+<span id="cb2-230"><a href="#cb2-230" tabindex="-1"></a><span class="co">#&gt; 228 1991-03-26  2.45000000</span></span>
+<span id="cb2-231"><a href="#cb2-231" tabindex="-1"></a><span class="co">#&gt; 229 1991-03-27  2.60833333</span></span>
+<span id="cb2-232"><a href="#cb2-232" tabindex="-1"></a><span class="co">#&gt; 230 1991-03-28  2.52500000</span></span>
+<span id="cb2-233"><a href="#cb2-233" tabindex="-1"></a><span class="co">#&gt; 231 1991-03-29  2.57500000</span></span>
+<span id="cb2-234"><a href="#cb2-234" tabindex="-1"></a><span class="co">#&gt; 232 1991-03-30  2.54166667</span></span>
+<span id="cb2-235"><a href="#cb2-235" tabindex="-1"></a><span class="co">#&gt; 233 1991-03-31  2.60833333</span></span>
+<span id="cb2-236"><a href="#cb2-236" tabindex="-1"></a><span class="co">#&gt; 234 1991-04-01  2.59166667</span></span>
+<span id="cb2-237"><a href="#cb2-237" tabindex="-1"></a><span class="co">#&gt; 235 1991-04-02  2.70000000</span></span>
+<span id="cb2-238"><a href="#cb2-238" tabindex="-1"></a><span class="co">#&gt; 236 1991-04-03  2.83333333</span></span>
+<span id="cb2-239"><a href="#cb2-239" tabindex="-1"></a><span class="co">#&gt; 237 1991-04-04  3.10000000</span></span>
+<span id="cb2-240"><a href="#cb2-240" tabindex="-1"></a><span class="co">#&gt; 238 1991-04-05  3.28333333</span></span>
+<span id="cb2-241"><a href="#cb2-241" tabindex="-1"></a><span class="co">#&gt; 239 1991-04-06  3.32500000</span></span>
+<span id="cb2-242"><a href="#cb2-242" tabindex="-1"></a><span class="co">#&gt; 240 1991-04-07  3.40000000</span></span>
+<span id="cb2-243"><a href="#cb2-243" tabindex="-1"></a><span class="co">#&gt; 241 1991-04-08  3.45000000</span></span>
+<span id="cb2-244"><a href="#cb2-244" tabindex="-1"></a><span class="co">#&gt; 242 1991-04-09  3.45833333</span></span>
+<span id="cb2-245"><a href="#cb2-245" tabindex="-1"></a><span class="co">#&gt; 243 1991-04-10  3.60000000</span></span>
+<span id="cb2-246"><a href="#cb2-246" tabindex="-1"></a><span class="co">#&gt; 244 1991-04-11  3.75000000</span></span>
+<span id="cb2-247"><a href="#cb2-247" tabindex="-1"></a><span class="co">#&gt; 245 1991-04-12  3.85000000</span></span>
+<span id="cb2-248"><a href="#cb2-248" tabindex="-1"></a><span class="co">#&gt; 246 1991-04-13  3.79166667</span></span>
+<span id="cb2-249"><a href="#cb2-249" tabindex="-1"></a><span class="co">#&gt; 247 1991-04-14  3.98333333</span></span>
+<span id="cb2-250"><a href="#cb2-250" tabindex="-1"></a><span class="co">#&gt; 248 1991-04-15  4.20833333</span></span>
+<span id="cb2-251"><a href="#cb2-251" tabindex="-1"></a><span class="co">#&gt; 249 1991-04-16  4.37500000</span></span>
+<span id="cb2-252"><a href="#cb2-252" tabindex="-1"></a><span class="co">#&gt; 250 1991-04-17  4.50000000</span></span>
+<span id="cb2-253"><a href="#cb2-253" tabindex="-1"></a><span class="co">#&gt; 251 1991-04-18  4.68333333</span></span>
+<span id="cb2-254"><a href="#cb2-254" tabindex="-1"></a><span class="co">#&gt; 252 1991-04-19  4.39166667</span></span>
+<span id="cb2-255"><a href="#cb2-255" tabindex="-1"></a><span class="co">#&gt; 253 1991-04-20  4.45833333</span></span>
+<span id="cb2-256"><a href="#cb2-256" tabindex="-1"></a><span class="co">#&gt; 254 1991-04-21  4.05000000</span></span>
+<span id="cb2-257"><a href="#cb2-257" tabindex="-1"></a><span class="co">#&gt; 255 1991-04-22  3.72500000</span></span>
+<span id="cb2-258"><a href="#cb2-258" tabindex="-1"></a><span class="co">#&gt; 256 1991-04-23  4.37500000</span></span>
+<span id="cb2-259"><a href="#cb2-259" tabindex="-1"></a><span class="co">#&gt; 257 1991-04-24  4.45000000</span></span>
+<span id="cb2-260"><a href="#cb2-260" tabindex="-1"></a><span class="co">#&gt; 258 1991-04-25  3.13333333</span></span>
+<span id="cb2-261"><a href="#cb2-261" tabindex="-1"></a><span class="co">#&gt; 259 1991-04-26  3.10000000</span></span>
+<span id="cb2-262"><a href="#cb2-262" tabindex="-1"></a><span class="co">#&gt; 260 1991-04-27  3.22500000</span></span>
+<span id="cb2-263"><a href="#cb2-263" tabindex="-1"></a><span class="co">#&gt; 261 1991-04-28  3.05000000</span></span>
+<span id="cb2-264"><a href="#cb2-264" tabindex="-1"></a><span class="co">#&gt; 262 1991-04-29  2.60833333</span></span>
+<span id="cb2-265"><a href="#cb2-265" tabindex="-1"></a><span class="co">#&gt; 263 1991-04-30  3.27500000</span></span>
+<span id="cb2-266"><a href="#cb2-266" tabindex="-1"></a><span class="co">#&gt; 264 1991-05-01  3.32500000</span></span>
+<span id="cb2-267"><a href="#cb2-267" tabindex="-1"></a><span class="co">#&gt; 265 1991-05-02  3.25000000</span></span>
+<span id="cb2-268"><a href="#cb2-268" tabindex="-1"></a><span class="co">#&gt; 266 1991-05-03  3.55833333</span></span>
+<span id="cb2-269"><a href="#cb2-269" tabindex="-1"></a><span class="co">#&gt; 267 1991-05-04  3.66666667</span></span>
+<span id="cb2-270"><a href="#cb2-270" tabindex="-1"></a><span class="co">#&gt; 268 1991-05-05  3.94166667</span></span>
+<span id="cb2-271"><a href="#cb2-271" tabindex="-1"></a><span class="co">#&gt; 269 1991-05-06  3.85000000</span></span>
+<span id="cb2-272"><a href="#cb2-272" tabindex="-1"></a><span class="co">#&gt; 270 1991-05-07  4.30000000</span></span>
+<span id="cb2-273"><a href="#cb2-273" tabindex="-1"></a><span class="co">#&gt; 271 1991-05-08  4.32500000</span></span>
+<span id="cb2-274"><a href="#cb2-274" tabindex="-1"></a><span class="co">#&gt; 272 1991-05-09  3.60833333</span></span>
+<span id="cb2-275"><a href="#cb2-275" tabindex="-1"></a><span class="co">#&gt; 273 1991-05-10  3.61666667</span></span>
+<span id="cb2-276"><a href="#cb2-276" tabindex="-1"></a><span class="co">#&gt; 274 1991-05-11  3.86666667</span></span>
+<span id="cb2-277"><a href="#cb2-277" tabindex="-1"></a><span class="co">#&gt; 275 1991-05-12  4.29166667</span></span>
+<span id="cb2-278"><a href="#cb2-278" tabindex="-1"></a><span class="co">#&gt; 276 1991-05-13  4.60833333</span></span>
+<span id="cb2-279"><a href="#cb2-279" tabindex="-1"></a><span class="co">#&gt; 277 1991-05-14  4.50833333</span></span>
+<span id="cb2-280"><a href="#cb2-280" tabindex="-1"></a><span class="co">#&gt; 278 1991-05-15  4.81666667</span></span>
+<span id="cb2-281"><a href="#cb2-281" tabindex="-1"></a><span class="co">#&gt; 279 1991-05-16  5.10000000</span></span>
+<span id="cb2-282"><a href="#cb2-282" tabindex="-1"></a><span class="co">#&gt; 280 1991-05-17  5.39166667</span></span>
+<span id="cb2-283"><a href="#cb2-283" tabindex="-1"></a><span class="co">#&gt; 281 1991-05-18  5.18333333</span></span>
+<span id="cb2-284"><a href="#cb2-284" tabindex="-1"></a><span class="co">#&gt; 282 1991-05-19  4.87500000</span></span>
+<span id="cb2-285"><a href="#cb2-285" tabindex="-1"></a><span class="co">#&gt; 283 1991-05-20  5.03333333</span></span>
+<span id="cb2-286"><a href="#cb2-286" tabindex="-1"></a><span class="co">#&gt; 284 1991-05-21  5.60833333</span></span>
+<span id="cb2-287"><a href="#cb2-287" tabindex="-1"></a><span class="co">#&gt; 285 1991-05-22  5.40000000</span></span>
+<span id="cb2-288"><a href="#cb2-288" tabindex="-1"></a><span class="co">#&gt; 286 1991-05-23  5.12500000</span></span>
+<span id="cb2-289"><a href="#cb2-289" tabindex="-1"></a><span class="co">#&gt; 287 1991-05-24  5.34166667</span></span>
+<span id="cb2-290"><a href="#cb2-290" tabindex="-1"></a><span class="co">#&gt; 288 1991-05-25  5.93333333</span></span>
+<span id="cb2-291"><a href="#cb2-291" tabindex="-1"></a><span class="co">#&gt; 289 1991-05-26  6.02500000</span></span>
+<span id="cb2-292"><a href="#cb2-292" tabindex="-1"></a><span class="co">#&gt; 290 1991-05-27  5.39166667</span></span>
+<span id="cb2-293"><a href="#cb2-293" tabindex="-1"></a><span class="co">#&gt; 291 1991-05-28  5.27500000</span></span>
+<span id="cb2-294"><a href="#cb2-294" tabindex="-1"></a><span class="co">#&gt; 292 1991-05-29  5.56666667</span></span>
+<span id="cb2-295"><a href="#cb2-295" tabindex="-1"></a><span class="co">#&gt; 293 1991-05-30  5.53333333</span></span>
+<span id="cb2-296"><a href="#cb2-296" tabindex="-1"></a><span class="co">#&gt; 294 1991-05-31  5.27500000</span></span>
+<span id="cb2-297"><a href="#cb2-297" tabindex="-1"></a><span class="co">#&gt; 295 1991-06-01  5.51666667</span></span>
+<span id="cb2-298"><a href="#cb2-298" tabindex="-1"></a><span class="co">#&gt; 296 1991-06-02  6.24166667</span></span>
+<span id="cb2-299"><a href="#cb2-299" tabindex="-1"></a><span class="co">#&gt; 297 1991-06-03  6.24166667</span></span>
+<span id="cb2-300"><a href="#cb2-300" tabindex="-1"></a><span class="co">#&gt; 298 1991-06-04  6.21666667</span></span>
+<span id="cb2-301"><a href="#cb2-301" tabindex="-1"></a><span class="co">#&gt; 299 1991-06-05  5.95000000</span></span>
+<span id="cb2-302"><a href="#cb2-302" tabindex="-1"></a><span class="co">#&gt; 300 1991-06-06  6.71666667</span></span>
+<span id="cb2-303"><a href="#cb2-303" tabindex="-1"></a><span class="co">#&gt; 301 1991-06-07  6.42500000</span></span>
+<span id="cb2-304"><a href="#cb2-304" tabindex="-1"></a><span class="co">#&gt; 302 1991-06-08  6.97500000</span></span>
+<span id="cb2-305"><a href="#cb2-305" tabindex="-1"></a><span class="co">#&gt; 303 1991-06-09  6.58333333</span></span>
+<span id="cb2-306"><a href="#cb2-306" tabindex="-1"></a><span class="co">#&gt; 304 1991-06-10  6.35000000</span></span>
+<span id="cb2-307"><a href="#cb2-307" tabindex="-1"></a><span class="co">#&gt; 305 1991-06-11  6.19166667</span></span>
+<span id="cb2-308"><a href="#cb2-308" tabindex="-1"></a><span class="co">#&gt; 306 1991-06-12  6.29166667</span></span>
+<span id="cb2-309"><a href="#cb2-309" tabindex="-1"></a><span class="co">#&gt; 307 1991-06-13  6.76666667</span></span>
+<span id="cb2-310"><a href="#cb2-310" tabindex="-1"></a><span class="co">#&gt; 308 1991-06-14  7.01666667</span></span>
+<span id="cb2-311"><a href="#cb2-311" tabindex="-1"></a><span class="co">#&gt; 309 1991-06-15  7.17500000</span></span>
+<span id="cb2-312"><a href="#cb2-312" tabindex="-1"></a><span class="co">#&gt; 310 1991-06-16  7.09166667</span></span>
+<span id="cb2-313"><a href="#cb2-313" tabindex="-1"></a><span class="co">#&gt; 311 1991-06-17  6.81666667</span></span>
+<span id="cb2-314"><a href="#cb2-314" tabindex="-1"></a><span class="co">#&gt; 312 1991-06-18  6.84166667</span></span>
+<span id="cb2-315"><a href="#cb2-315" tabindex="-1"></a><span class="co">#&gt; 313 1991-06-19  6.76666667</span></span>
+<span id="cb2-316"><a href="#cb2-316" tabindex="-1"></a><span class="co">#&gt; 314 1991-06-20  7.29166667</span></span>
+<span id="cb2-317"><a href="#cb2-317" tabindex="-1"></a><span class="co">#&gt; 315 1991-06-21  6.78333333</span></span>
+<span id="cb2-318"><a href="#cb2-318" tabindex="-1"></a><span class="co">#&gt; 316 1991-06-22  6.93333333</span></span>
+<span id="cb2-319"><a href="#cb2-319" tabindex="-1"></a><span class="co">#&gt; 317 1991-06-23  7.50833333</span></span>
+<span id="cb2-320"><a href="#cb2-320" tabindex="-1"></a><span class="co">#&gt; 318 1991-06-24  6.90833333</span></span>
+<span id="cb2-321"><a href="#cb2-321" tabindex="-1"></a><span class="co">#&gt; 319 1991-06-25  7.26666667</span></span>
+<span id="cb2-322"><a href="#cb2-322" tabindex="-1"></a><span class="co">#&gt; 320 1991-06-26  7.45833333</span></span>
+<span id="cb2-323"><a href="#cb2-323" tabindex="-1"></a><span class="co">#&gt; 321 1991-06-27  6.56666667</span></span>
+<span id="cb2-324"><a href="#cb2-324" tabindex="-1"></a><span class="co">#&gt; 322 1991-06-28  6.30000000</span></span>
+<span id="cb2-325"><a href="#cb2-325" tabindex="-1"></a><span class="co">#&gt; 323 1991-06-29  6.38333333</span></span>
+<span id="cb2-326"><a href="#cb2-326" tabindex="-1"></a><span class="co">#&gt; 324 1991-06-30  6.72500000</span></span>
+<span id="cb2-327"><a href="#cb2-327" tabindex="-1"></a><span class="co">#&gt; 325 1991-07-01  7.00000000</span></span>
+<span id="cb2-328"><a href="#cb2-328" tabindex="-1"></a><span class="co">#&gt; 326 1991-07-02  6.79166667</span></span>
+<span id="cb2-329"><a href="#cb2-329" tabindex="-1"></a><span class="co">#&gt; 327 1991-07-03  6.61666667</span></span>
+<span id="cb2-330"><a href="#cb2-330" tabindex="-1"></a><span class="co">#&gt; 328 1991-07-04  6.74166667</span></span>
+<span id="cb2-331"><a href="#cb2-331" tabindex="-1"></a><span class="co">#&gt; 329 1991-07-05  7.67500000</span></span>
+<span id="cb2-332"><a href="#cb2-332" tabindex="-1"></a><span class="co">#&gt; 330 1991-07-06  6.87500000</span></span>
+<span id="cb2-333"><a href="#cb2-333" tabindex="-1"></a><span class="co">#&gt; 331 1991-07-07  7.51666667</span></span>
+<span id="cb2-334"><a href="#cb2-334" tabindex="-1"></a><span class="co">#&gt; 332 1991-07-08  8.05000000</span></span>
+<span id="cb2-335"><a href="#cb2-335" tabindex="-1"></a><span class="co">#&gt; 333 1991-07-09  8.63333333</span></span>
+<span id="cb2-336"><a href="#cb2-336" tabindex="-1"></a><span class="co">#&gt; 334 1991-07-10  8.50833333</span></span>
+<span id="cb2-337"><a href="#cb2-337" tabindex="-1"></a><span class="co">#&gt; 335 1991-07-11  8.25833333</span></span>
+<span id="cb2-338"><a href="#cb2-338" tabindex="-1"></a><span class="co">#&gt; 336 1991-07-12  9.92500000</span></span>
+<span id="cb2-339"><a href="#cb2-339" tabindex="-1"></a><span class="co">#&gt; 337 1991-07-13  8.12500000</span></span>
+<span id="cb2-340"><a href="#cb2-340" tabindex="-1"></a><span class="co">#&gt; 338 1991-07-14  8.20833333</span></span>
+<span id="cb2-341"><a href="#cb2-341" tabindex="-1"></a><span class="co">#&gt; 339 1991-07-15  9.95000000</span></span>
+<span id="cb2-342"><a href="#cb2-342" tabindex="-1"></a><span class="co">#&gt; 340 1991-07-16  7.35833333</span></span>
+<span id="cb2-343"><a href="#cb2-343" tabindex="-1"></a><span class="co">#&gt; 341 1991-07-17  8.31666667</span></span>
+<span id="cb2-344"><a href="#cb2-344" tabindex="-1"></a><span class="co">#&gt; 342 1991-07-18  8.22500000</span></span>
+<span id="cb2-345"><a href="#cb2-345" tabindex="-1"></a><span class="co">#&gt; 343 1991-07-19  9.20000000</span></span>
+<span id="cb2-346"><a href="#cb2-346" tabindex="-1"></a><span class="co">#&gt; 344 1991-07-20  9.95000000</span></span>
+<span id="cb2-347"><a href="#cb2-347" tabindex="-1"></a><span class="co">#&gt; 345 1991-07-21  9.97500000</span></span>
+<span id="cb2-348"><a href="#cb2-348" tabindex="-1"></a><span class="co">#&gt; 346 1991-07-22 10.35833333</span></span>
+<span id="cb2-349"><a href="#cb2-349" tabindex="-1"></a><span class="co">#&gt; 347 1991-07-23 10.63333333</span></span>
+<span id="cb2-350"><a href="#cb2-350" tabindex="-1"></a><span class="co">#&gt; 348 1991-07-24 10.80833333</span></span>
+<span id="cb2-351"><a href="#cb2-351" tabindex="-1"></a><span class="co">#&gt; 349 1991-07-25 10.99166667</span></span>
+<span id="cb2-352"><a href="#cb2-352" tabindex="-1"></a><span class="co">#&gt; 350 1991-07-26 11.54166667</span></span>
+<span id="cb2-353"><a href="#cb2-353" tabindex="-1"></a><span class="co">#&gt; 351 1991-07-27 11.78333333</span></span>
+<span id="cb2-354"><a href="#cb2-354" tabindex="-1"></a><span class="co">#&gt; 352 1991-07-28 12.05000000</span></span>
+<span id="cb2-355"><a href="#cb2-355" tabindex="-1"></a><span class="co">#&gt; 353 1991-07-29 12.06666667</span></span>
+<span id="cb2-356"><a href="#cb2-356" tabindex="-1"></a><span class="co">#&gt; 354 1991-07-30 11.90833333</span></span>
+<span id="cb2-357"><a href="#cb2-357" tabindex="-1"></a><span class="co">#&gt; 355 1991-07-31 10.80000000</span></span>
+<span id="cb2-358"><a href="#cb2-358" tabindex="-1"></a><span class="co">#&gt; 356 1991-08-01 10.90000000</span></span>
+<span id="cb2-359"><a href="#cb2-359" tabindex="-1"></a><span class="co">#&gt; 357 1991-08-02 11.45833333</span></span>
+<span id="cb2-360"><a href="#cb2-360" tabindex="-1"></a><span class="co">#&gt; 358 1991-08-03 11.58333333</span></span>
+<span id="cb2-361"><a href="#cb2-361" tabindex="-1"></a><span class="co">#&gt; 359 1991-08-04 11.70000000</span></span>
+<span id="cb2-362"><a href="#cb2-362" tabindex="-1"></a><span class="co">#&gt; 360 1991-08-05 11.75000000</span></span>
+<span id="cb2-363"><a href="#cb2-363" tabindex="-1"></a><span class="co">#&gt; 361 1991-08-06 11.51666667</span></span>
+<span id="cb2-364"><a href="#cb2-364" tabindex="-1"></a><span class="co">#&gt; 362 1991-08-07 11.74166667</span></span>
+<span id="cb2-365"><a href="#cb2-365" tabindex="-1"></a><span class="co">#&gt; 363 1991-08-08 12.05833333</span></span>
+<span id="cb2-366"><a href="#cb2-366" tabindex="-1"></a><span class="co">#&gt; 364 1991-08-09 11.50833333</span></span>
+<span id="cb2-367"><a href="#cb2-367" tabindex="-1"></a><span class="co">#&gt; 365 1991-08-10 10.84166667</span></span>
+<span id="cb2-368"><a href="#cb2-368" tabindex="-1"></a><span class="co">#&gt; 366 1991-08-11  2.10000000</span></span>
+<span id="cb2-369"><a href="#cb2-369" tabindex="-1"></a><span class="co">#&gt; 367 1991-08-12 -9.90000000</span></span>
+<span id="cb2-370"><a href="#cb2-370" tabindex="-1"></a><span class="co">#&gt; 368 1991-08-13  2.77500000</span></span>
+<span id="cb2-371"><a href="#cb2-371" tabindex="-1"></a><span class="co">#&gt; 369 1991-08-14 10.65000000</span></span>
+<span id="cb2-372"><a href="#cb2-372" tabindex="-1"></a><span class="co">#&gt; 370 1991-08-15  9.15833333</span></span>
+<span id="cb2-373"><a href="#cb2-373" tabindex="-1"></a><span class="co">#&gt; 371 1991-08-16  9.06666667</span></span>
+<span id="cb2-374"><a href="#cb2-374" tabindex="-1"></a><span class="co">#&gt; 372 1991-08-17  9.61666667</span></span>
+<span id="cb2-375"><a href="#cb2-375" tabindex="-1"></a><span class="co">#&gt; 373 1991-08-18 10.32500000</span></span>
+<span id="cb2-376"><a href="#cb2-376" tabindex="-1"></a><span class="co">#&gt; 374 1991-08-19  9.98333333</span></span>
+<span id="cb2-377"><a href="#cb2-377" tabindex="-1"></a><span class="co">#&gt; 375 1991-08-20 10.45833333</span></span>
+<span id="cb2-378"><a href="#cb2-378" tabindex="-1"></a><span class="co">#&gt; 376 1991-08-21 10.89166667</span></span>
+<span id="cb2-379"><a href="#cb2-379" tabindex="-1"></a><span class="co">#&gt; 377 1991-08-22 11.36666667</span></span>
+<span id="cb2-380"><a href="#cb2-380" tabindex="-1"></a><span class="co">#&gt; 378 1991-08-23 11.67500000</span></span>
+<span id="cb2-381"><a href="#cb2-381" tabindex="-1"></a><span class="co">#&gt; 379 1991-08-24 10.82500000</span></span>
+<span id="cb2-382"><a href="#cb2-382" tabindex="-1"></a><span class="co">#&gt; 380 1991-08-25  8.24166667</span></span>
+<span id="cb2-383"><a href="#cb2-383" tabindex="-1"></a><span class="co">#&gt; 381 1991-08-26  9.46666667</span></span>
+<span id="cb2-384"><a href="#cb2-384" tabindex="-1"></a><span class="co">#&gt; 382 1991-08-27 10.12500000</span></span>
+<span id="cb2-385"><a href="#cb2-385" tabindex="-1"></a><span class="co">#&gt; 383 1991-08-28 10.21666667</span></span>
+<span id="cb2-386"><a href="#cb2-386" tabindex="-1"></a><span class="co">#&gt; 384 1991-08-29 10.41666667</span></span>
+<span id="cb2-387"><a href="#cb2-387" tabindex="-1"></a><span class="co">#&gt; 385 1991-08-30 10.61666667</span></span>
+<span id="cb2-388"><a href="#cb2-388" tabindex="-1"></a><span class="co">#&gt; 386 1991-08-31 11.05833333</span></span>
+<span id="cb2-389"><a href="#cb2-389" tabindex="-1"></a><span class="co">#&gt; 387 1991-09-01 10.55833333</span></span>
+<span id="cb2-390"><a href="#cb2-390" tabindex="-1"></a><span class="co">#&gt; 388 1991-09-02 10.16666667</span></span>
+<span id="cb2-391"><a href="#cb2-391" tabindex="-1"></a><span class="co">#&gt; 389 1991-09-03 10.38333333</span></span>
+<span id="cb2-392"><a href="#cb2-392" tabindex="-1"></a><span class="co">#&gt; 390 1991-09-04 10.30833333</span></span>
+<span id="cb2-393"><a href="#cb2-393" tabindex="-1"></a><span class="co">#&gt; 391 1991-09-05 10.51666667</span></span>
+<span id="cb2-394"><a href="#cb2-394" tabindex="-1"></a><span class="co">#&gt; 392 1991-09-06 10.71666667</span></span>
+<span id="cb2-395"><a href="#cb2-395" tabindex="-1"></a><span class="co">#&gt; 393 1991-09-07 10.65833333</span></span>
+<span id="cb2-396"><a href="#cb2-396" tabindex="-1"></a><span class="co">#&gt; 394 1991-09-08  9.56666667</span></span>
+<span id="cb2-397"><a href="#cb2-397" tabindex="-1"></a><span class="co">#&gt; 395 1991-09-09  9.23333333</span></span>
+<span id="cb2-398"><a href="#cb2-398" tabindex="-1"></a><span class="co">#&gt; 396 1991-09-10  9.32500000</span></span>
+<span id="cb2-399"><a href="#cb2-399" tabindex="-1"></a><span class="co">#&gt; 397 1991-09-11  9.82500000</span></span>
+<span id="cb2-400"><a href="#cb2-400" tabindex="-1"></a><span class="co">#&gt; 398 1991-09-12 10.17500000</span></span>
+<span id="cb2-401"><a href="#cb2-401" tabindex="-1"></a><span class="co">#&gt; 399 1991-09-13  9.92500000</span></span>
+<span id="cb2-402"><a href="#cb2-402" tabindex="-1"></a><span class="co">#&gt; 400 1991-09-14  8.59166667</span></span>
+<span id="cb2-403"><a href="#cb2-403" tabindex="-1"></a><span class="co">#&gt; 401 1991-09-15  8.58333333</span></span>
+<span id="cb2-404"><a href="#cb2-404" tabindex="-1"></a><span class="co">#&gt; 402 1991-09-16  8.50000000</span></span>
+<span id="cb2-405"><a href="#cb2-405" tabindex="-1"></a><span class="co">#&gt; 403 1991-09-17  8.40000000</span></span>
+<span id="cb2-406"><a href="#cb2-406" tabindex="-1"></a><span class="co">#&gt; 404 1991-09-18  8.51666667</span></span>
+<span id="cb2-407"><a href="#cb2-407" tabindex="-1"></a><span class="co">#&gt; 405 1991-09-19  8.65000000</span></span>
+<span id="cb2-408"><a href="#cb2-408" tabindex="-1"></a><span class="co">#&gt; 406 1991-09-20  8.86666667</span></span>
+<span id="cb2-409"><a href="#cb2-409" tabindex="-1"></a><span class="co">#&gt; 407 1991-09-21  8.87500000</span></span>
+<span id="cb2-410"><a href="#cb2-410" tabindex="-1"></a><span class="co">#&gt; 408 1991-09-22  8.36666667</span></span>
+<span id="cb2-411"><a href="#cb2-411" tabindex="-1"></a><span class="co">#&gt; 409 1991-09-23  7.85000000</span></span>
+<span id="cb2-412"><a href="#cb2-412" tabindex="-1"></a><span class="co">#&gt; 410 1991-09-24  7.85000000</span></span>
+<span id="cb2-413"><a href="#cb2-413" tabindex="-1"></a><span class="co">#&gt; 411 1991-09-25  7.86666667</span></span>
+<span id="cb2-414"><a href="#cb2-414" tabindex="-1"></a><span class="co">#&gt; 412 1991-09-26  7.89166667</span></span>
+<span id="cb2-415"><a href="#cb2-415" tabindex="-1"></a><span class="co">#&gt; 413 1991-09-27  8.08333333</span></span>
+<span id="cb2-416"><a href="#cb2-416" tabindex="-1"></a><span class="co">#&gt; 414 1991-09-28  8.25833333</span></span>
+<span id="cb2-417"><a href="#cb2-417" tabindex="-1"></a><span class="co">#&gt; 415 1991-09-29  7.94166667</span></span>
+<span id="cb2-418"><a href="#cb2-418" tabindex="-1"></a><span class="co">#&gt; 416 1991-09-30  7.89166667</span></span>
+<span id="cb2-419"><a href="#cb2-419" tabindex="-1"></a><span class="co">#&gt; 417 1991-10-01  7.94166667</span></span>
+<span id="cb2-420"><a href="#cb2-420" tabindex="-1"></a><span class="co">#&gt; 418 1991-10-02  8.04166667</span></span>
+<span id="cb2-421"><a href="#cb2-421" tabindex="-1"></a><span class="co">#&gt; 419 1991-10-03  7.86666667</span></span>
+<span id="cb2-422"><a href="#cb2-422" tabindex="-1"></a><span class="co">#&gt; 420 1991-10-04  7.85000000</span></span>
+<span id="cb2-423"><a href="#cb2-423" tabindex="-1"></a><span class="co">#&gt; 421 1991-10-05  7.85833333</span></span>
+<span id="cb2-424"><a href="#cb2-424" tabindex="-1"></a><span class="co">#&gt; 422 1991-10-06  7.73333333</span></span>
+<span id="cb2-425"><a href="#cb2-425" tabindex="-1"></a><span class="co">#&gt; 423 1991-10-07  7.45000000</span></span>
+<span id="cb2-426"><a href="#cb2-426" tabindex="-1"></a><span class="co">#&gt; 424 1991-10-08  7.40000000</span></span>
+<span id="cb2-427"><a href="#cb2-427" tabindex="-1"></a><span class="co">#&gt; 425 1991-10-09  6.88333333</span></span>
+<span id="cb2-428"><a href="#cb2-428" tabindex="-1"></a><span class="co">#&gt; 426 1991-10-10  6.57500000</span></span>
+<span id="cb2-429"><a href="#cb2-429" tabindex="-1"></a><span class="co">#&gt; 427 1991-10-11  6.39166667</span></span>
+<span id="cb2-430"><a href="#cb2-430" tabindex="-1"></a><span class="co">#&gt; 428 1991-10-12  6.66666667</span></span>
+<span id="cb2-431"><a href="#cb2-431" tabindex="-1"></a><span class="co">#&gt; 429 1991-10-13  6.58333333</span></span>
+<span id="cb2-432"><a href="#cb2-432" tabindex="-1"></a><span class="co">#&gt; 430 1991-10-14  5.90833333</span></span>
+<span id="cb2-433"><a href="#cb2-433" tabindex="-1"></a><span class="co">#&gt; 431 1991-10-15  5.76666667</span></span>
+<span id="cb2-434"><a href="#cb2-434" tabindex="-1"></a><span class="co">#&gt; 432 1991-10-16  6.38333333</span></span>
+<span id="cb2-435"><a href="#cb2-435" tabindex="-1"></a><span class="co">#&gt; 433 1991-10-17  6.54166667</span></span>
+<span id="cb2-436"><a href="#cb2-436" tabindex="-1"></a><span class="co">#&gt; 434 1991-10-18  6.80833333</span></span>
+<span id="cb2-437"><a href="#cb2-437" tabindex="-1"></a><span class="co">#&gt; 435 1991-10-19  6.71666667</span></span>
+<span id="cb2-438"><a href="#cb2-438" tabindex="-1"></a><span class="co">#&gt; 436 1991-10-20  5.86666667</span></span>
+<span id="cb2-439"><a href="#cb2-439" tabindex="-1"></a><span class="co">#&gt; 437 1991-10-21  5.47500000</span></span>
+<span id="cb2-440"><a href="#cb2-440" tabindex="-1"></a><span class="co">#&gt; 438 1991-10-22  5.52500000</span></span>
+<span id="cb2-441"><a href="#cb2-441" tabindex="-1"></a><span class="co">#&gt; 439 1991-10-23  5.71666667</span></span>
+<span id="cb2-442"><a href="#cb2-442" tabindex="-1"></a><span class="co">#&gt; 440 1991-10-24  5.67500000</span></span>
+<span id="cb2-443"><a href="#cb2-443" tabindex="-1"></a><span class="co">#&gt; 441 1991-10-25  5.56666667</span></span>
+<span id="cb2-444"><a href="#cb2-444" tabindex="-1"></a><span class="co">#&gt; 442 1991-10-26  5.55000000</span></span>
+<span id="cb2-445"><a href="#cb2-445" tabindex="-1"></a><span class="co">#&gt; 443 1991-10-27  5.70833333</span></span>
+<span id="cb2-446"><a href="#cb2-446" tabindex="-1"></a><span class="co">#&gt; 444 1991-10-28  5.94166667</span></span>
+<span id="cb2-447"><a href="#cb2-447" tabindex="-1"></a><span class="co">#&gt; 445 1991-10-29  6.08333333</span></span>
+<span id="cb2-448"><a href="#cb2-448" tabindex="-1"></a><span class="co">#&gt; 446 1991-10-30  6.10000000</span></span>
+<span id="cb2-449"><a href="#cb2-449" tabindex="-1"></a><span class="co">#&gt; 447 1991-10-31  5.92500000</span></span>
+<span id="cb2-450"><a href="#cb2-450" tabindex="-1"></a><span class="co">#&gt; 448 1991-11-01  6.12500000</span></span>
+<span id="cb2-451"><a href="#cb2-451" tabindex="-1"></a><span class="co">#&gt; 449 1991-11-02  6.14166667</span></span>
+<span id="cb2-452"><a href="#cb2-452" tabindex="-1"></a><span class="co">#&gt; 450 1991-11-03  6.30833333</span></span>
+<span id="cb2-453"><a href="#cb2-453" tabindex="-1"></a><span class="co">#&gt; 451 1991-11-04  6.20833333</span></span>
+<span id="cb2-454"><a href="#cb2-454" tabindex="-1"></a><span class="co">#&gt; 452 1991-11-05  6.15833333</span></span>
+<span id="cb2-455"><a href="#cb2-455" tabindex="-1"></a><span class="co">#&gt; 453 1991-11-06  6.16666667</span></span>
+<span id="cb2-456"><a href="#cb2-456" tabindex="-1"></a><span class="co">#&gt; 454 1991-11-07  6.09166667</span></span>
+<span id="cb2-457"><a href="#cb2-457" tabindex="-1"></a><span class="co">#&gt; 455 1991-11-08  6.02500000</span></span>
+<span id="cb2-458"><a href="#cb2-458" tabindex="-1"></a><span class="co">#&gt; 456 1991-11-09  5.89166667</span></span>
+<span id="cb2-459"><a href="#cb2-459" tabindex="-1"></a><span class="co">#&gt; 457 1991-11-10  5.72500000</span></span>
+<span id="cb2-460"><a href="#cb2-460" tabindex="-1"></a><span class="co">#&gt; 458 1991-11-11  5.39166667</span></span>
+<span id="cb2-461"><a href="#cb2-461" tabindex="-1"></a><span class="co">#&gt; 459 1991-11-12  4.68333333</span></span>
+<span id="cb2-462"><a href="#cb2-462" tabindex="-1"></a><span class="co">#&gt; 460 1991-11-13  4.14166667</span></span>
+<span id="cb2-463"><a href="#cb2-463" tabindex="-1"></a><span class="co">#&gt; 461 1991-11-14  4.13333333</span></span>
+<span id="cb2-464"><a href="#cb2-464" tabindex="-1"></a><span class="co">#&gt; 462 1991-11-15  3.90000000</span></span>
+<span id="cb2-465"><a href="#cb2-465" tabindex="-1"></a><span class="co">#&gt; 463 1991-11-16  3.71666667</span></span>
+<span id="cb2-466"><a href="#cb2-466" tabindex="-1"></a><span class="co">#&gt; 464 1991-11-17  3.75833333</span></span>
+<span id="cb2-467"><a href="#cb2-467" tabindex="-1"></a><span class="co">#&gt; 465 1991-11-18  3.31666667</span></span>
+<span id="cb2-468"><a href="#cb2-468" tabindex="-1"></a><span class="co">#&gt; 466 1991-11-19  2.85833333</span></span>
+<span id="cb2-469"><a href="#cb2-469" tabindex="-1"></a><span class="co">#&gt; 467 1991-11-20  1.64166667</span></span>
+<span id="cb2-470"><a href="#cb2-470" tabindex="-1"></a><span class="co">#&gt; 468 1991-11-21  1.00833333</span></span>
+<span id="cb2-471"><a href="#cb2-471" tabindex="-1"></a><span class="co">#&gt; 469 1991-11-22  2.60000000</span></span>
+<span id="cb2-472"><a href="#cb2-472" tabindex="-1"></a><span class="co">#&gt; 470 1991-11-23  3.22500000</span></span>
+<span id="cb2-473"><a href="#cb2-473" tabindex="-1"></a><span class="co">#&gt; 471 1991-11-24  3.08333333</span></span>
+<span id="cb2-474"><a href="#cb2-474" tabindex="-1"></a><span class="co">#&gt; 472 1991-11-25  3.27500000</span></span>
+<span id="cb2-475"><a href="#cb2-475" tabindex="-1"></a><span class="co">#&gt; 473 1991-11-26  2.80833333</span></span>
+<span id="cb2-476"><a href="#cb2-476" tabindex="-1"></a><span class="co">#&gt; 474 1991-11-27  2.95000000</span></span>
+<span id="cb2-477"><a href="#cb2-477" tabindex="-1"></a><span class="co">#&gt; 475 1991-11-28  2.99166667</span></span>
+<span id="cb2-478"><a href="#cb2-478" tabindex="-1"></a><span class="co">#&gt; 476 1991-11-29  3.18333333</span></span>
+<span id="cb2-479"><a href="#cb2-479" tabindex="-1"></a><span class="co">#&gt; 477 1991-11-30  3.26666667</span></span>
+<span id="cb2-480"><a href="#cb2-480" tabindex="-1"></a><span class="co">#&gt; 478 1991-12-01  2.91666667</span></span>
+<span id="cb2-481"><a href="#cb2-481" tabindex="-1"></a><span class="co">#&gt; 479 1991-12-02  2.97500000</span></span>
+<span id="cb2-482"><a href="#cb2-482" tabindex="-1"></a><span class="co">#&gt; 480 1991-12-03  3.19166667</span></span>
+<span id="cb2-483"><a href="#cb2-483" tabindex="-1"></a><span class="co">#&gt; 481 1991-12-04  3.30833333</span></span>
+<span id="cb2-484"><a href="#cb2-484" tabindex="-1"></a><span class="co">#&gt; 482 1991-12-05  3.18333333</span></span>
+<span id="cb2-485"><a href="#cb2-485" tabindex="-1"></a><span class="co">#&gt; 483 1991-12-06  2.41666667</span></span>
+<span id="cb2-486"><a href="#cb2-486" tabindex="-1"></a><span class="co">#&gt; 484 1991-12-07  1.74166667</span></span>
+<span id="cb2-487"><a href="#cb2-487" tabindex="-1"></a><span class="co">#&gt; 485 1991-12-08  2.21666667</span></span>
+<span id="cb2-488"><a href="#cb2-488" tabindex="-1"></a><span class="co">#&gt; 486 1991-12-09  1.51666667</span></span>
+<span id="cb2-489"><a href="#cb2-489" tabindex="-1"></a><span class="co">#&gt; 487 1991-12-10  2.42500000</span></span>
+<span id="cb2-490"><a href="#cb2-490" tabindex="-1"></a><span class="co">#&gt; 488 1991-12-11  2.37500000</span></span>
+<span id="cb2-491"><a href="#cb2-491" tabindex="-1"></a><span class="co">#&gt; 489 1991-12-12  2.09166667</span></span>
+<span id="cb2-492"><a href="#cb2-492" tabindex="-1"></a><span class="co">#&gt; 490 1991-12-13  1.81666667</span></span>
+<span id="cb2-493"><a href="#cb2-493" tabindex="-1"></a><span class="co">#&gt; 491 1991-12-14  2.11666667</span></span>
+<span id="cb2-494"><a href="#cb2-494" tabindex="-1"></a><span class="co">#&gt; 492 1991-12-15  2.34166667</span></span>
+<span id="cb2-495"><a href="#cb2-495" tabindex="-1"></a><span class="co">#&gt; 493 1991-12-16  2.10833333</span></span>
+<span id="cb2-496"><a href="#cb2-496" tabindex="-1"></a><span class="co">#&gt; 494 1991-12-17  1.55000000</span></span>
+<span id="cb2-497"><a href="#cb2-497" tabindex="-1"></a><span class="co">#&gt; 495 1991-12-18  0.74166667</span></span>
+<span id="cb2-498"><a href="#cb2-498" tabindex="-1"></a><span class="co">#&gt; 496 1991-12-19  0.75833333</span></span>
+<span id="cb2-499"><a href="#cb2-499" tabindex="-1"></a><span class="co">#&gt; 497 1991-12-20  1.48333333</span></span>
+<span id="cb2-500"><a href="#cb2-500" tabindex="-1"></a><span class="co">#&gt; 498 1991-12-21  0.94166667</span></span>
+<span id="cb2-501"><a href="#cb2-501" tabindex="-1"></a><span class="co">#&gt; 499 1991-12-22  1.03333333</span></span>
+<span id="cb2-502"><a href="#cb2-502" tabindex="-1"></a><span class="co">#&gt; 500 1991-12-23  1.34166667</span></span>
+<span id="cb2-503"><a href="#cb2-503" tabindex="-1"></a><span class="co">#&gt; 501 1991-12-24  1.56666667</span></span>
+<span id="cb2-504"><a href="#cb2-504" tabindex="-1"></a><span class="co">#&gt; 502 1991-12-25  1.07500000</span></span>
+<span id="cb2-505"><a href="#cb2-505" tabindex="-1"></a><span class="co">#&gt; 503 1991-12-26  0.66666667</span></span>
+<span id="cb2-506"><a href="#cb2-506" tabindex="-1"></a><span class="co">#&gt; 504 1991-12-27  1.23333333</span></span>
+<span id="cb2-507"><a href="#cb2-507" tabindex="-1"></a><span class="co">#&gt; 505 1991-12-28  0.90833333</span></span>
+<span id="cb2-508"><a href="#cb2-508" tabindex="-1"></a><span class="co">#&gt; 506 1991-12-29  1.16666667</span></span>
+<span id="cb2-509"><a href="#cb2-509" tabindex="-1"></a><span class="co">#&gt; 507 1991-12-30  1.09166667</span></span>
+<span id="cb2-510"><a href="#cb2-510" tabindex="-1"></a><span class="co">#&gt; 508 1991-12-31  1.05000000</span></span>
+<span id="cb2-511"><a href="#cb2-511" tabindex="-1"></a><span class="co">#&gt; 509 1992-01-01  1.16666667</span></span>
+<span id="cb2-512"><a href="#cb2-512" tabindex="-1"></a><span class="co">#&gt; 510 1992-01-02  1.10000000</span></span>
+<span id="cb2-513"><a href="#cb2-513" tabindex="-1"></a><span class="co">#&gt; 511 1992-01-03  1.11666667</span></span>
+<span id="cb2-514"><a href="#cb2-514" tabindex="-1"></a><span class="co">#&gt; 512 1992-01-04  0.56666667</span></span>
+<span id="cb2-515"><a href="#cb2-515" tabindex="-1"></a><span class="co">#&gt; 513 1992-01-05  0.60833333</span></span>
+<span id="cb2-516"><a href="#cb2-516" tabindex="-1"></a><span class="co">#&gt; 514 1992-01-06  0.76666667</span></span>
+<span id="cb2-517"><a href="#cb2-517" tabindex="-1"></a><span class="co">#&gt; 515 1992-01-07  1.02500000</span></span>
+<span id="cb2-518"><a href="#cb2-518" tabindex="-1"></a><span class="co">#&gt; 516 1992-01-08  1.15833333</span></span>
+<span id="cb2-519"><a href="#cb2-519" tabindex="-1"></a><span class="co">#&gt; 517 1992-01-09  1.06666667</span></span>
+<span id="cb2-520"><a href="#cb2-520" tabindex="-1"></a><span class="co">#&gt; 518 1992-01-10  0.85000000</span></span>
+<span id="cb2-521"><a href="#cb2-521" tabindex="-1"></a><span class="co">#&gt; 519 1992-01-11  0.65000000</span></span>
+<span id="cb2-522"><a href="#cb2-522" tabindex="-1"></a><span class="co">#&gt; 520 1992-01-12  0.63333333</span></span>
+<span id="cb2-523"><a href="#cb2-523" tabindex="-1"></a><span class="co">#&gt; 521 1992-01-13  0.95000000</span></span>
+<span id="cb2-524"><a href="#cb2-524" tabindex="-1"></a><span class="co">#&gt; 522 1992-01-14  1.10000000</span></span>
+<span id="cb2-525"><a href="#cb2-525" tabindex="-1"></a><span class="co">#&gt; 523 1992-01-15  1.20000000</span></span>
+<span id="cb2-526"><a href="#cb2-526" tabindex="-1"></a><span class="co">#&gt; 524 1992-01-16  1.35833333</span></span>
+<span id="cb2-527"><a href="#cb2-527" tabindex="-1"></a><span class="co">#&gt; 525 1992-01-17  1.49166667</span></span>
+<span id="cb2-528"><a href="#cb2-528" tabindex="-1"></a><span class="co">#&gt; 526 1992-01-18  1.15833333</span></span>
+<span id="cb2-529"><a href="#cb2-529" tabindex="-1"></a><span class="co">#&gt; 527 1992-01-19  1.37500000</span></span>
+<span id="cb2-530"><a href="#cb2-530" tabindex="-1"></a><span class="co">#&gt; 528 1992-01-20  1.44166667</span></span>
+<span id="cb2-531"><a href="#cb2-531" tabindex="-1"></a><span class="co">#&gt; 529 1992-01-21  1.43333333</span></span>
+<span id="cb2-532"><a href="#cb2-532" tabindex="-1"></a><span class="co">#&gt; 530 1992-01-22  1.40833333</span></span>
+<span id="cb2-533"><a href="#cb2-533" tabindex="-1"></a><span class="co">#&gt; 531 1992-01-23  1.50833333</span></span>
+<span id="cb2-534"><a href="#cb2-534" tabindex="-1"></a><span class="co">#&gt; 532 1992-01-24  1.54166667</span></span>
+<span id="cb2-535"><a href="#cb2-535" tabindex="-1"></a><span class="co">#&gt; 533 1992-01-25  1.53333333</span></span>
+<span id="cb2-536"><a href="#cb2-536" tabindex="-1"></a><span class="co">#&gt; 534 1992-01-26  1.58333333</span></span>
+<span id="cb2-537"><a href="#cb2-537" tabindex="-1"></a><span class="co">#&gt; 535 1992-01-27  1.58333333</span></span>
+<span id="cb2-538"><a href="#cb2-538" tabindex="-1"></a><span class="co">#&gt; 536 1992-01-28  1.60000000</span></span>
+<span id="cb2-539"><a href="#cb2-539" tabindex="-1"></a><span class="co">#&gt; 537 1992-01-29  1.57500000</span></span>
+<span id="cb2-540"><a href="#cb2-540" tabindex="-1"></a><span class="co">#&gt; 538 1992-01-30  1.59166667</span></span>
+<span id="cb2-541"><a href="#cb2-541" tabindex="-1"></a><span class="co">#&gt; 539 1992-01-31  1.60000000</span></span>
+<span id="cb2-542"><a href="#cb2-542" tabindex="-1"></a><span class="co">#&gt; 540 1992-02-01  1.59166667</span></span>
+<span id="cb2-543"><a href="#cb2-543" tabindex="-1"></a><span class="co">#&gt; 541 1992-02-02  1.60833333</span></span>
+<span id="cb2-544"><a href="#cb2-544" tabindex="-1"></a><span class="co">#&gt; 542 1992-02-03  1.60833333</span></span>
+<span id="cb2-545"><a href="#cb2-545" tabindex="-1"></a><span class="co">#&gt; 543 1992-02-04  1.59166667</span></span>
+<span id="cb2-546"><a href="#cb2-546" tabindex="-1"></a><span class="co">#&gt; 544 1992-02-05  1.59166667</span></span>
+<span id="cb2-547"><a href="#cb2-547" tabindex="-1"></a><span class="co">#&gt; 545 1992-02-06  1.60833333</span></span>
+<span id="cb2-548"><a href="#cb2-548" tabindex="-1"></a><span class="co">#&gt; 546 1992-02-07  1.64166667</span></span>
+<span id="cb2-549"><a href="#cb2-549" tabindex="-1"></a><span class="co">#&gt; 547 1992-02-08  1.64166667</span></span>
+<span id="cb2-550"><a href="#cb2-550" tabindex="-1"></a><span class="co">#&gt; 548 1992-02-09  1.59166667</span></span>
+<span id="cb2-551"><a href="#cb2-551" tabindex="-1"></a><span class="co">#&gt; 549 1992-02-10  1.60000000</span></span>
+<span id="cb2-552"><a href="#cb2-552" tabindex="-1"></a><span class="co">#&gt; 550 1992-02-11  1.61666667</span></span>
+<span id="cb2-553"><a href="#cb2-553" tabindex="-1"></a><span class="co">#&gt; 551 1992-02-12  1.59166667</span></span>
+<span id="cb2-554"><a href="#cb2-554" tabindex="-1"></a><span class="co">#&gt; 552 1992-02-13  1.60000000</span></span>
+<span id="cb2-555"><a href="#cb2-555" tabindex="-1"></a><span class="co">#&gt; 553 1992-02-14  1.61666667</span></span>
+<span id="cb2-556"><a href="#cb2-556" tabindex="-1"></a><span class="co">#&gt; 554 1992-02-15  1.61666667</span></span>
+<span id="cb2-557"><a href="#cb2-557" tabindex="-1"></a><span class="co">#&gt; 555 1992-02-16  1.59166667</span></span>
+<span id="cb2-558"><a href="#cb2-558" tabindex="-1"></a><span class="co">#&gt; 556 1992-02-17  1.61666667</span></span>
+<span id="cb2-559"><a href="#cb2-559" tabindex="-1"></a><span class="co">#&gt; 557 1992-02-18  1.62500000</span></span>
+<span id="cb2-560"><a href="#cb2-560" tabindex="-1"></a><span class="co">#&gt; 558 1992-02-19  1.60833333</span></span>
+<span id="cb2-561"><a href="#cb2-561" tabindex="-1"></a><span class="co">#&gt; 559 1992-02-20  1.60833333</span></span>
+<span id="cb2-562"><a href="#cb2-562" tabindex="-1"></a><span class="co">#&gt; 560 1992-02-21  1.55833333</span></span>
+<span id="cb2-563"><a href="#cb2-563" tabindex="-1"></a><span class="co">#&gt; 561 1992-02-22  1.59166667</span></span>
+<span id="cb2-564"><a href="#cb2-564" tabindex="-1"></a><span class="co">#&gt; 562 1992-02-23  1.60000000</span></span>
+<span id="cb2-565"><a href="#cb2-565" tabindex="-1"></a><span class="co">#&gt; 563 1992-02-24  1.58333333</span></span>
+<span id="cb2-566"><a href="#cb2-566" tabindex="-1"></a><span class="co">#&gt; 564 1992-02-25  1.60833333</span></span>
+<span id="cb2-567"><a href="#cb2-567" tabindex="-1"></a><span class="co">#&gt; 565 1992-02-26  1.67500000</span></span>
+<span id="cb2-568"><a href="#cb2-568" tabindex="-1"></a><span class="co">#&gt; 566 1992-02-27  1.63333333</span></span>
+<span id="cb2-569"><a href="#cb2-569" tabindex="-1"></a><span class="co">#&gt; 567 1992-02-28  1.60833333</span></span>
+<span id="cb2-570"><a href="#cb2-570" tabindex="-1"></a><span class="co">#&gt; 568 1992-02-29  1.59166667</span></span>
+<span id="cb2-571"><a href="#cb2-571" tabindex="-1"></a><span class="co">#&gt; 569 1992-03-01  1.61666667</span></span>
+<span id="cb2-572"><a href="#cb2-572" tabindex="-1"></a><span class="co">#&gt; 570 1992-03-02  1.60000000</span></span>
+<span id="cb2-573"><a href="#cb2-573" tabindex="-1"></a><span class="co">#&gt; 571 1992-03-03  1.57500000</span></span>
+<span id="cb2-574"><a href="#cb2-574" tabindex="-1"></a><span class="co">#&gt; 572 1992-03-04  1.60833333</span></span>
+<span id="cb2-575"><a href="#cb2-575" tabindex="-1"></a><span class="co">#&gt; 573 1992-03-05  1.62500000</span></span>
+<span id="cb2-576"><a href="#cb2-576" tabindex="-1"></a><span class="co">#&gt; 574 1992-03-06  1.60833333</span></span>
+<span id="cb2-577"><a href="#cb2-577" tabindex="-1"></a><span class="co">#&gt; 575 1992-03-07  1.56666667</span></span>
+<span id="cb2-578"><a href="#cb2-578" tabindex="-1"></a><span class="co">#&gt; 576 1992-03-08  1.66666667</span></span>
+<span id="cb2-579"><a href="#cb2-579" tabindex="-1"></a><span class="co">#&gt; 577 1992-03-09  1.66666667</span></span>
+<span id="cb2-580"><a href="#cb2-580" tabindex="-1"></a><span class="co">#&gt; 578 1992-03-10  1.74166667</span></span>
+<span id="cb2-581"><a href="#cb2-581" tabindex="-1"></a><span class="co">#&gt; 579 1992-03-11  1.70833333</span></span>
+<span id="cb2-582"><a href="#cb2-582" tabindex="-1"></a><span class="co">#&gt; 580 1992-03-12  1.70833333</span></span>
+<span id="cb2-583"><a href="#cb2-583" tabindex="-1"></a><span class="co">#&gt; 581 1992-03-13  1.75833333</span></span>
+<span id="cb2-584"><a href="#cb2-584" tabindex="-1"></a><span class="co">#&gt; 582 1992-03-14  1.80000000</span></span>
+<span id="cb2-585"><a href="#cb2-585" tabindex="-1"></a><span class="co">#&gt; 583 1992-03-15  1.90833333</span></span>
+<span id="cb2-586"><a href="#cb2-586" tabindex="-1"></a><span class="co">#&gt; 584 1992-03-16  2.03333333</span></span>
+<span id="cb2-587"><a href="#cb2-587" tabindex="-1"></a><span class="co">#&gt; 585 1992-03-17  2.15833333</span></span>
+<span id="cb2-588"><a href="#cb2-588" tabindex="-1"></a><span class="co">#&gt; 586 1992-03-18  2.03333333</span></span>
+<span id="cb2-589"><a href="#cb2-589" tabindex="-1"></a><span class="co">#&gt; 587 1992-03-19  2.01666667</span></span>
+<span id="cb2-590"><a href="#cb2-590" tabindex="-1"></a><span class="co">#&gt; 588 1992-03-20  2.03333333</span></span>
+<span id="cb2-591"><a href="#cb2-591" tabindex="-1"></a><span class="co">#&gt; 589 1992-03-21  2.02500000</span></span>
+<span id="cb2-592"><a href="#cb2-592" tabindex="-1"></a><span class="co">#&gt; 590 1992-03-22  2.07500000</span></span>
+<span id="cb2-593"><a href="#cb2-593" tabindex="-1"></a><span class="co">#&gt; 591 1992-03-23  2.09166667</span></span>
+<span id="cb2-594"><a href="#cb2-594" tabindex="-1"></a><span class="co">#&gt; 592 1992-03-24  2.09166667</span></span>
+<span id="cb2-595"><a href="#cb2-595" tabindex="-1"></a><span class="co">#&gt; 593 1992-03-25  2.04166667</span></span>
+<span id="cb2-596"><a href="#cb2-596" tabindex="-1"></a><span class="co">#&gt; 594 1992-03-26  2.17500000</span></span>
+<span id="cb2-597"><a href="#cb2-597" tabindex="-1"></a><span class="co">#&gt; 595 1992-03-27  2.22500000</span></span>
+<span id="cb2-598"><a href="#cb2-598" tabindex="-1"></a><span class="co">#&gt; 596 1992-03-28  2.25000000</span></span>
+<span id="cb2-599"><a href="#cb2-599" tabindex="-1"></a><span class="co">#&gt; 597 1992-03-29  2.29166667</span></span>
+<span id="cb2-600"><a href="#cb2-600" tabindex="-1"></a><span class="co">#&gt; 598 1992-03-30  2.34166667</span></span>
+<span id="cb2-601"><a href="#cb2-601" tabindex="-1"></a><span class="co">#&gt; 599 1992-03-31  2.32500000</span></span>
+<span id="cb2-602"><a href="#cb2-602" tabindex="-1"></a><span class="co">#&gt; 600 1992-04-01  2.45000000</span></span>
+<span id="cb2-603"><a href="#cb2-603" tabindex="-1"></a><span class="co">#&gt; 601 1992-04-02  2.50833333</span></span>
+<span id="cb2-604"><a href="#cb2-604" tabindex="-1"></a><span class="co">#&gt; 602 1992-04-03  2.60833333</span></span>
+<span id="cb2-605"><a href="#cb2-605" tabindex="-1"></a><span class="co">#&gt; 603 1992-04-04  2.69166667</span></span>
+<span id="cb2-606"><a href="#cb2-606" tabindex="-1"></a><span class="co">#&gt; 604 1992-04-05  2.84166667</span></span>
+<span id="cb2-607"><a href="#cb2-607" tabindex="-1"></a><span class="co">#&gt; 605 1992-04-06  3.00000000</span></span>
+<span id="cb2-608"><a href="#cb2-608" tabindex="-1"></a><span class="co">#&gt; 606 1992-04-07  3.22500000</span></span>
+<span id="cb2-609"><a href="#cb2-609" tabindex="-1"></a><span class="co">#&gt; 607 1992-04-08  3.36666667</span></span>
+<span id="cb2-610"><a href="#cb2-610" tabindex="-1"></a><span class="co">#&gt; 608 1992-04-09  3.52500000</span></span>
+<span id="cb2-611"><a href="#cb2-611" tabindex="-1"></a><span class="co">#&gt; 609 1992-04-10  3.65833333</span></span>
+<span id="cb2-612"><a href="#cb2-612" tabindex="-1"></a><span class="co">#&gt; 610 1992-04-11  3.87500000</span></span>
+<span id="cb2-613"><a href="#cb2-613" tabindex="-1"></a><span class="co">#&gt; 611 1992-04-12  4.07500000</span></span>
+<span id="cb2-614"><a href="#cb2-614" tabindex="-1"></a><span class="co">#&gt; 612 1992-04-13  4.30833333</span></span>
+<span id="cb2-615"><a href="#cb2-615" tabindex="-1"></a><span class="co">#&gt; 613 1992-04-14  4.28333333</span></span>
+<span id="cb2-616"><a href="#cb2-616" tabindex="-1"></a><span class="co">#&gt; 614 1992-04-15  4.27500000</span></span>
+<span id="cb2-617"><a href="#cb2-617" tabindex="-1"></a><span class="co">#&gt; 615 1992-04-16  4.45833333</span></span>
+<span id="cb2-618"><a href="#cb2-618" tabindex="-1"></a><span class="co">#&gt; 616 1992-04-17  4.52500000</span></span>
+<span id="cb2-619"><a href="#cb2-619" tabindex="-1"></a><span class="co">#&gt; 617 1992-04-18  4.53333333</span></span>
+<span id="cb2-620"><a href="#cb2-620" tabindex="-1"></a><span class="co">#&gt; 618 1992-04-19  4.55000000</span></span>
+<span id="cb2-621"><a href="#cb2-621" tabindex="-1"></a><span class="co">#&gt; 619 1992-04-20  4.56666667</span></span>
+<span id="cb2-622"><a href="#cb2-622" tabindex="-1"></a><span class="co">#&gt; 620 1992-04-21  4.41666667</span></span>
+<span id="cb2-623"><a href="#cb2-623" tabindex="-1"></a><span class="co">#&gt; 621 1992-04-22  4.46666667</span></span>
+<span id="cb2-624"><a href="#cb2-624" tabindex="-1"></a><span class="co">#&gt; 622 1992-04-23  4.43333333</span></span>
+<span id="cb2-625"><a href="#cb2-625" tabindex="-1"></a><span class="co">#&gt; 623 1992-04-24  4.43333333</span></span>
+<span id="cb2-626"><a href="#cb2-626" tabindex="-1"></a><span class="co">#&gt; 624 1992-04-25  4.47500000</span></span>
+<span id="cb2-627"><a href="#cb2-627" tabindex="-1"></a><span class="co">#&gt; 625 1992-04-26  4.39166667</span></span>
+<span id="cb2-628"><a href="#cb2-628" tabindex="-1"></a><span class="co">#&gt; 626 1992-04-27  4.42500000</span></span>
+<span id="cb2-629"><a href="#cb2-629" tabindex="-1"></a><span class="co">#&gt; 627 1992-04-28  4.44166667</span></span>
+<span id="cb2-630"><a href="#cb2-630" tabindex="-1"></a><span class="co">#&gt; 628 1992-04-29  4.46666667</span></span>
+<span id="cb2-631"><a href="#cb2-631" tabindex="-1"></a><span class="co">#&gt; 629 1992-04-30  4.50000000</span></span>
+<span id="cb2-632"><a href="#cb2-632" tabindex="-1"></a><span class="co">#&gt; 630 1992-05-01  4.54166667</span></span>
+<span id="cb2-633"><a href="#cb2-633" tabindex="-1"></a><span class="co">#&gt; 631 1992-05-02  4.42500000</span></span>
+<span id="cb2-634"><a href="#cb2-634" tabindex="-1"></a><span class="co">#&gt; 632 1992-05-03  4.45000000</span></span>
+<span id="cb2-635"><a href="#cb2-635" tabindex="-1"></a><span class="co">#&gt; 633 1992-05-04  4.26666667</span></span>
+<span id="cb2-636"><a href="#cb2-636" tabindex="-1"></a><span class="co">#&gt; 634 1992-05-05  4.25833333</span></span>
+<span id="cb2-637"><a href="#cb2-637" tabindex="-1"></a><span class="co">#&gt; 635 1992-05-06  3.43333333</span></span>
+<span id="cb2-638"><a href="#cb2-638" tabindex="-1"></a><span class="co">#&gt; 636 1992-05-07  3.36666667</span></span>
+<span id="cb2-639"><a href="#cb2-639" tabindex="-1"></a><span class="co">#&gt; 637 1992-05-08  3.45000000</span></span>
+<span id="cb2-640"><a href="#cb2-640" tabindex="-1"></a><span class="co">#&gt; 638 1992-05-09  3.06666667</span></span>
+<span id="cb2-641"><a href="#cb2-641" tabindex="-1"></a><span class="co">#&gt; 639 1992-05-10  3.16666667</span></span>
+<span id="cb2-642"><a href="#cb2-642" tabindex="-1"></a><span class="co">#&gt; 640 1992-05-11  3.41666667</span></span>
+<span id="cb2-643"><a href="#cb2-643" tabindex="-1"></a><span class="co">#&gt; 641 1992-05-12  3.47500000</span></span>
+<span id="cb2-644"><a href="#cb2-644" tabindex="-1"></a><span class="co">#&gt; 642 1992-05-13  3.66666667</span></span>
+<span id="cb2-645"><a href="#cb2-645" tabindex="-1"></a><span class="co">#&gt; 643 1992-05-14  3.90833333</span></span>
+<span id="cb2-646"><a href="#cb2-646" tabindex="-1"></a><span class="co">#&gt; 644 1992-05-15  3.85833333</span></span>
+<span id="cb2-647"><a href="#cb2-647" tabindex="-1"></a><span class="co">#&gt; 645 1992-05-16  3.75000000</span></span>
+<span id="cb2-648"><a href="#cb2-648" tabindex="-1"></a><span class="co">#&gt; 646 1992-05-17  3.91666667</span></span>
+<span id="cb2-649"><a href="#cb2-649" tabindex="-1"></a><span class="co">#&gt; 647 1992-05-18  4.12500000</span></span>
+<span id="cb2-650"><a href="#cb2-650" tabindex="-1"></a><span class="co">#&gt; 648 1992-05-19  4.43333333</span></span>
+<span id="cb2-651"><a href="#cb2-651" tabindex="-1"></a><span class="co">#&gt; 649 1992-05-20  5.10833333</span></span>
+<span id="cb2-652"><a href="#cb2-652" tabindex="-1"></a><span class="co">#&gt; 650 1992-05-21  6.23333333</span></span>
+<span id="cb2-653"><a href="#cb2-653" tabindex="-1"></a><span class="co">#&gt; 651 1992-05-22  6.50000000</span></span>
+<span id="cb2-654"><a href="#cb2-654" tabindex="-1"></a><span class="co">#&gt; 652 1992-05-23  6.72500000</span></span>
+<span id="cb2-655"><a href="#cb2-655" tabindex="-1"></a><span class="co">#&gt; 653 1992-05-24  6.89166667</span></span>
+<span id="cb2-656"><a href="#cb2-656" tabindex="-1"></a><span class="co">#&gt; 654 1992-05-25  7.04166667</span></span>
+<span id="cb2-657"><a href="#cb2-657" tabindex="-1"></a><span class="co">#&gt; 655 1992-05-26  7.23333333</span></span>
+<span id="cb2-658"><a href="#cb2-658" tabindex="-1"></a><span class="co">#&gt; 656 1992-05-27  7.66666667</span></span>
+<span id="cb2-659"><a href="#cb2-659" tabindex="-1"></a><span class="co">#&gt; 657 1992-05-28  7.25000000</span></span>
+<span id="cb2-660"><a href="#cb2-660" tabindex="-1"></a><span class="co">#&gt; 658 1992-05-29  7.68333333</span></span>
+<span id="cb2-661"><a href="#cb2-661" tabindex="-1"></a><span class="co">#&gt; 659 1992-05-30  8.15000000</span></span>
+<span id="cb2-662"><a href="#cb2-662" tabindex="-1"></a><span class="co">#&gt; 660 1992-05-31  7.35833333</span></span>
+<span id="cb2-663"><a href="#cb2-663" tabindex="-1"></a><span class="co">#&gt; 661 1992-06-01  7.22500000</span></span>
+<span id="cb2-664"><a href="#cb2-664" tabindex="-1"></a><span class="co">#&gt; 662 1992-06-02  7.62500000</span></span>
+<span id="cb2-665"><a href="#cb2-665" tabindex="-1"></a><span class="co">#&gt; 663 1992-06-03  7.80000000</span></span>
+<span id="cb2-666"><a href="#cb2-666" tabindex="-1"></a><span class="co">#&gt; 664 1992-06-04  7.72500000</span></span>
+<span id="cb2-667"><a href="#cb2-667" tabindex="-1"></a><span class="co">#&gt; 665 1992-06-05  7.41666667</span></span>
+<span id="cb2-668"><a href="#cb2-668" tabindex="-1"></a><span class="co">#&gt; 666 1992-06-06  7.28333333</span></span>
+<span id="cb2-669"><a href="#cb2-669" tabindex="-1"></a><span class="co">#&gt; 667 1992-06-07  6.89166667</span></span>
+<span id="cb2-670"><a href="#cb2-670" tabindex="-1"></a><span class="co">#&gt; 668 1992-06-08  6.48333333</span></span>
+<span id="cb2-671"><a href="#cb2-671" tabindex="-1"></a><span class="co">#&gt; 669 1992-06-09  6.79166667</span></span>
+<span id="cb2-672"><a href="#cb2-672" tabindex="-1"></a><span class="co">#&gt; 670 1992-06-10  7.05833333</span></span>
+<span id="cb2-673"><a href="#cb2-673" tabindex="-1"></a><span class="co">#&gt; 671 1992-06-11  8.15000000</span></span>
+<span id="cb2-674"><a href="#cb2-674" tabindex="-1"></a><span class="co">#&gt; 672 1992-06-12  7.22500000</span></span>
+<span id="cb2-675"><a href="#cb2-675" tabindex="-1"></a><span class="co">#&gt; 673 1992-06-13  7.31666667</span></span>
+<span id="cb2-676"><a href="#cb2-676" tabindex="-1"></a><span class="co">#&gt; 674 1992-06-14  7.75833333</span></span>
+<span id="cb2-677"><a href="#cb2-677" tabindex="-1"></a><span class="co">#&gt; 675 1992-06-15  7.10000000</span></span>
+<span id="cb2-678"><a href="#cb2-678" tabindex="-1"></a><span class="co">#&gt; 676 1992-06-16  8.27500000</span></span>
+<span id="cb2-679"><a href="#cb2-679" tabindex="-1"></a><span class="co">#&gt; 677 1992-06-17  7.85833333</span></span>
+<span id="cb2-680"><a href="#cb2-680" tabindex="-1"></a><span class="co">#&gt; 678 1992-06-18  7.65000000</span></span>
+<span id="cb2-681"><a href="#cb2-681" tabindex="-1"></a><span class="co">#&gt; 679 1992-06-19  7.60000000</span></span>
+<span id="cb2-682"><a href="#cb2-682" tabindex="-1"></a><span class="co">#&gt; 680 1992-06-20  7.00833333</span></span>
+<span id="cb2-683"><a href="#cb2-683" tabindex="-1"></a><span class="co">#&gt; 681 1992-06-21  7.07500000</span></span>
+<span id="cb2-684"><a href="#cb2-684" tabindex="-1"></a><span class="co">#&gt; 682 1992-06-22  7.47500000</span></span>
+<span id="cb2-685"><a href="#cb2-685" tabindex="-1"></a><span class="co">#&gt; 683 1992-06-23  6.70000000</span></span>
+<span id="cb2-686"><a href="#cb2-686" tabindex="-1"></a><span class="co">#&gt; 684 1992-06-24  6.92500000</span></span>
+<span id="cb2-687"><a href="#cb2-687" tabindex="-1"></a><span class="co">#&gt; 685 1992-06-25  7.32500000</span></span>
+<span id="cb2-688"><a href="#cb2-688" tabindex="-1"></a><span class="co">#&gt; 686 1992-06-26  7.05833333</span></span>
+<span id="cb2-689"><a href="#cb2-689" tabindex="-1"></a><span class="co">#&gt; 687 1992-06-27  7.29166667</span></span>
+<span id="cb2-690"><a href="#cb2-690" tabindex="-1"></a><span class="co">#&gt; 688 1992-06-28  7.24166667</span></span>
+<span id="cb2-691"><a href="#cb2-691" tabindex="-1"></a><span class="co">#&gt; 689 1992-06-29  7.45833333</span></span>
+<span id="cb2-692"><a href="#cb2-692" tabindex="-1"></a><span class="co">#&gt; 690 1992-06-30  6.80833333</span></span>
+<span id="cb2-693"><a href="#cb2-693" tabindex="-1"></a><span class="co">#&gt; 691 1992-07-01  7.50000000</span></span>
+<span id="cb2-694"><a href="#cb2-694" tabindex="-1"></a><span class="co">#&gt; 692 1992-07-02  7.77500000</span></span>
+<span id="cb2-695"><a href="#cb2-695" tabindex="-1"></a><span class="co">#&gt; 693 1992-07-03  8.16666667</span></span>
+<span id="cb2-696"><a href="#cb2-696" tabindex="-1"></a><span class="co">#&gt; 694 1992-07-04  9.44166667</span></span>
+<span id="cb2-697"><a href="#cb2-697" tabindex="-1"></a><span class="co">#&gt; 695 1992-07-05  8.57500000</span></span>
+<span id="cb2-698"><a href="#cb2-698" tabindex="-1"></a><span class="co">#&gt; 696 1992-07-06  7.88333333</span></span>
+<span id="cb2-699"><a href="#cb2-699" tabindex="-1"></a><span class="co">#&gt; 697 1992-07-07  7.27500000</span></span>
+<span id="cb2-700"><a href="#cb2-700" tabindex="-1"></a><span class="co">#&gt; 698 1992-07-08  7.59166667</span></span>
+<span id="cb2-701"><a href="#cb2-701" tabindex="-1"></a><span class="co">#&gt; 699 1992-07-09  7.66666667</span></span>
+<span id="cb2-702"><a href="#cb2-702" tabindex="-1"></a><span class="co">#&gt; 700 1992-07-10  8.01666667</span></span>
+<span id="cb2-703"><a href="#cb2-703" tabindex="-1"></a><span class="co">#&gt; 701 1992-07-11  6.86666667</span></span>
+<span id="cb2-704"><a href="#cb2-704" tabindex="-1"></a><span class="co">#&gt; 702 1992-07-12  7.32500000</span></span>
+<span id="cb2-705"><a href="#cb2-705" tabindex="-1"></a><span class="co">#&gt; 703 1992-07-13  7.66666667</span></span>
+<span id="cb2-706"><a href="#cb2-706" tabindex="-1"></a><span class="co">#&gt; 704 1992-07-14  7.79166667</span></span>
+<span id="cb2-707"><a href="#cb2-707" tabindex="-1"></a><span class="co">#&gt; 705 1992-07-15  8.18333333</span></span>
+<span id="cb2-708"><a href="#cb2-708" tabindex="-1"></a><span class="co">#&gt; 706 1992-07-16  8.30000000</span></span>
+<span id="cb2-709"><a href="#cb2-709" tabindex="-1"></a><span class="co">#&gt; 707 1992-07-17  8.94166667</span></span>
+<span id="cb2-710"><a href="#cb2-710" tabindex="-1"></a><span class="co">#&gt; 708 1992-07-18  9.50000000</span></span>
+<span id="cb2-711"><a href="#cb2-711" tabindex="-1"></a><span class="co">#&gt; 709 1992-07-19 10.18333333</span></span>
+<span id="cb2-712"><a href="#cb2-712" tabindex="-1"></a><span class="co">#&gt; 710 1992-07-20 10.65000000</span></span>
+<span id="cb2-713"><a href="#cb2-713" tabindex="-1"></a><span class="co">#&gt; 711 1992-07-21 10.53333333</span></span>
+<span id="cb2-714"><a href="#cb2-714" tabindex="-1"></a><span class="co">#&gt; 712 1992-07-22  8.85000000</span></span>
+<span id="cb2-715"><a href="#cb2-715" tabindex="-1"></a><span class="co">#&gt; 713 1992-07-23  9.05833333</span></span>
+<span id="cb2-716"><a href="#cb2-716" tabindex="-1"></a><span class="co">#&gt; 714 1992-07-24  9.10000000</span></span>
+<span id="cb2-717"><a href="#cb2-717" tabindex="-1"></a><span class="co">#&gt; 715 1992-07-25 10.37500000</span></span>
+<span id="cb2-718"><a href="#cb2-718" tabindex="-1"></a><span class="co">#&gt; 716 1992-07-26 10.68333333</span></span>
+<span id="cb2-719"><a href="#cb2-719" tabindex="-1"></a><span class="co">#&gt; 717 1992-07-27 11.39166667</span></span>
+<span id="cb2-720"><a href="#cb2-720" tabindex="-1"></a><span class="co">#&gt; 718 1992-07-28 11.67500000</span></span>
+<span id="cb2-721"><a href="#cb2-721" tabindex="-1"></a><span class="co">#&gt; 719 1992-07-29 11.70000000</span></span>
+<span id="cb2-722"><a href="#cb2-722" tabindex="-1"></a><span class="co">#&gt; 720 1992-07-30 12.54166667</span></span>
+<span id="cb2-723"><a href="#cb2-723" tabindex="-1"></a><span class="co">#&gt; 721 1992-07-31 12.90000000</span></span>
+<span id="cb2-724"><a href="#cb2-724" tabindex="-1"></a><span class="co">#&gt; 722 1992-08-01 13.12500000</span></span>
+<span id="cb2-725"><a href="#cb2-725" tabindex="-1"></a><span class="co">#&gt; 723 1992-08-02 13.84166667</span></span>
+<span id="cb2-726"><a href="#cb2-726" tabindex="-1"></a><span class="co">#&gt; 724 1992-08-03 13.15000000</span></span>
+<span id="cb2-727"><a href="#cb2-727" tabindex="-1"></a><span class="co">#&gt; 725 1992-08-04 12.69166667</span></span>
+<span id="cb2-728"><a href="#cb2-728" tabindex="-1"></a><span class="co">#&gt; 726 1992-08-05 13.57500000</span></span>
+<span id="cb2-729"><a href="#cb2-729" tabindex="-1"></a><span class="co">#&gt; 727 1992-08-06 16.27500000</span></span>
+<span id="cb2-730"><a href="#cb2-730" tabindex="-1"></a><span class="co">#&gt; 728 1992-08-07 18.80000000</span></span>
+<span id="cb2-731"><a href="#cb2-731" tabindex="-1"></a><span class="co">#&gt; 729 1992-08-08 18.80000000</span></span>
+<span id="cb2-732"><a href="#cb2-732" tabindex="-1"></a><span class="co">#&gt; 730 1992-08-09 18.81666667</span></span>
+<span id="cb2-733"><a href="#cb2-733" tabindex="-1"></a><span class="co">#&gt; 731 1992-08-10 19.29166667</span></span>
+<span id="cb2-734"><a href="#cb2-734" tabindex="-1"></a><span class="co">#&gt; 732 1992-08-11 28.70000000</span></span>
+<span id="cb2-735"><a href="#cb2-735" tabindex="-1"></a><span class="co">#&gt; 733 1992-08-12 19.71666667</span></span>
+<span id="cb2-736"><a href="#cb2-736" tabindex="-1"></a><span class="co">#&gt; 734 1992-08-13 17.71666667</span></span>
+<span id="cb2-737"><a href="#cb2-737" tabindex="-1"></a><span class="co">#&gt; 735 1992-08-14 17.68000000</span></span>
+<span id="cb2-738"><a href="#cb2-738" tabindex="-1"></a><span class="fu">summary</span>(woody_island)</span>
+<span id="cb2-739"><a href="#cb2-739" tabindex="-1"></a><span class="co">#&gt;       date                temp_c      </span></span>
+<span id="cb2-740"><a href="#cb2-740" tabindex="-1"></a><span class="co">#&gt;  Min.   :1990-08-11   Min.   :-9.900  </span></span>
+<span id="cb2-741"><a href="#cb2-741" tabindex="-1"></a><span class="co">#&gt;  1st Qu.:1991-02-10   1st Qu.: 1.733  </span></span>
+<span id="cb2-742"><a href="#cb2-742" tabindex="-1"></a><span class="co">#&gt;  Median :1991-08-13   Median : 4.442  </span></span>
+<span id="cb2-743"><a href="#cb2-743" tabindex="-1"></a><span class="co">#&gt;  Mean   :1991-08-13   Mean   : 5.272  </span></span>
+<span id="cb2-744"><a href="#cb2-744" tabindex="-1"></a><span class="co">#&gt;  3rd Qu.:1992-02-12   3rd Qu.: 7.767  </span></span>
+<span id="cb2-745"><a href="#cb2-745" tabindex="-1"></a><span class="co">#&gt;  Max.   :1992-08-14   Max.   :28.700</span></span></code></pre></div>
+<p>You can see that each day already is summarized as a mean
+temperature. You can also see that the data spans multiple years. We’ll
+use <code>plot_check_temp()</code> to make visually check the data:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plot_check_temp</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">data =</span> woody_island,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  )</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>p</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>There appear to be outliers in the data, specifically in the very
+beginning and end of the period of record, and right in the middle. The
+loggers look to have been recording observations outside of the water
+and then in the middle where the water level may have dropped and
+exposed it to the air.</p>
+<p>However, spawning in this system typically peaks around August 18 and
+hatching and emergence are done before the start of the following
+spawning season, so we can predict phenology within a subset of a year.
+Because <code>plot_check_temp()</code> is a <strong>ggplot2</strong>
+object, we can add additional plotting elements to the graph to
+represent the approximate phenology window:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>p <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">geom_rect</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>      <span class="at">xmin =</span> <span class="fu">ymd</span>(<span class="st">&quot;1990-08-18&quot;</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>      <span class="at">xmax =</span> <span class="fu">ymd</span>(<span class="st">&quot;1991-04-01&quot;</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>      <span class="at">ymin =</span> <span class="sc">-</span><span class="dv">10</span>, </span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>      <span class="at">ymax =</span> <span class="dv">25</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    ), </span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">&quot;gray&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.01</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>If we just apply the model within the gray polygon we’ve drawn, the
+model should work just fine.</p>
+</div>
+<div id="model-select" class="section level2">
+<h2>Model select</h2>
+<p>Now that our temperature data is usable, we can select our models.
+We’ll predict both hatch and emergence, so we will obtain a model
+expression for each using <code>model_select()</code>. The only argument
+in <code>model_select()</code> that must be changed in this case is
+<code>development_type</code>, which can be either “hatch” or
+“emerge”.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>sockeye_hatch_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Beacham and Murray 1990&quot;</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;sockeye&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">model =</span> <span class="dv">2</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>sockeye_emerge_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Beacham and Murray 1990&quot;</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;sockeye&quot;</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  <span class="at">model =</span> <span class="dv">2</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;emerge&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>)</span></code></pre></div>
+<p>Let’s look at the model specifications for the two different
+parameterizations we’ve selected:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>sockeye_hatch_mod</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;   author                  species model_id development_type expression          </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;               </span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; 1 Beacham and Murray 1990 sockeye 2        hatch            1 /exp(6.727 - log(…</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>sockeye_emerge_mod</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt;   author                  species model_id development_type expression          </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;               </span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 1 Beacham and Murray 1990 sockeye 2        emerge           1 / exp(7.227 - log…</span></span></code></pre></div>
+<p>You can see they are parameterized slightly different to account for
+the differences between hatch and emergence timing.</p>
+</div>
+<div id="predict-phenology" class="section level2">
+<h2>Predict phenology</h2>
+<p>We can now use our model expressions to predict when sockeye would
+hatch and emerge at Woody Island in 1990. First we predict hatch timing
+using <code>predict_phenology()</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>WI_hatch <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="at">data =</span> woody_island,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">spawn.date =</span> <span class="st">&quot;1990-08-18&quot;</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">model =</span> sockeye_hatch_mod</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; Warning: ! Fish developed, but negative temperature values resulted in NaNs after</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;   development.</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; ℹ Check date(s): 1991-08-12</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; ℹ Fish spawn date was: 1990-08-18</span></span></code></pre></div>
+<blockquote>
+<p>Note the warning message that appears when you run this code for
+<code>woody_island</code>. It reveals that while the fish developed,
+negative temperature values resulted in <code>NaN</code>s after
+development. More on this in the <span id="neg_temp">Negative
+Temperature</span> section.</p>
+</blockquote>
+<p>Next, look inside the returned object to see days to hatch and
+development period (more on this in the <a href="#results">Understanding
+your results</a> section)</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>WI_hatch<span class="sc">$</span>days_to_develop</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; [1] 74</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>WI_hatch<span class="sc">$</span>dev.period</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; 1 1990-08-18 1990-10-30</span></span></code></pre></div>
+<p>We can also do the same with emergence:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>WI_emerge <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">data =</span> woody_island,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">spawn.date =</span> <span class="st">&quot;1990-08-18&quot;</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">model =</span> sockeye_emerge_mod <span class="co"># notice we&#39;re using emerge model expression here</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; Warning: ! Fish developed, but negative temperature values resulted in NaNs after</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt;   development.</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; ℹ Check date(s): 1991-08-12</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; ℹ Fish spawn date was: 1990-08-18</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>WI_emerge<span class="sc">$</span>days_to_develop</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; [1] 204</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>WI_emerge<span class="sc">$</span>dev.period</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; 1 1990-08-18 1991-03-09</span></span></code></pre></div>
+</div>
+<div id="results" class="section level2">
+<h2>Understanding your results</h2>
+<p>The output from <code>predict_phenology()</code> includes a lot of
+information. Here is a summary of the elements in the output list.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">summary</span>(WI_hatch)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt;                 Length Class       Mode   </span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; days_to_develop 1      -none-      numeric</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; dev.period      2      data.frame  list   </span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; ef_table        5      tbl_df      list   </span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; model_specs     5      spec_tbl_df list</span></span></code></pre></div>
+<p>We can access each element using the <code>$</code> operator:</p>
+<ul>
+<li><p><code>WI_hatch$days_to_develop</code> outputs the predicted days
+to hatch or emerge.</p></li>
+<li><p><code>WI_hatch$dev.period</code> is a 1x2 dataframe with the
+dates corresponding to when your fish’s parent spawned (which you input
+with <code>predict_phenology(spawn.date = ...)</code>) and the date when
+the fish is predicted to hatch or emerge.</p></li>
+<li><p><code>WI_hatch$ef.tibble</code> is a <em>n</em> x 5 tibble
+(<em>n</em> = number of days to hatch or emerge) and the columns are a
+row index, the date, each day’s temperature, effective value, and the
+cumulative sum of the effective values to that date. The
+<code>ef.tibble</code> object is meant to serve as the basis for users
+to make custom figures for their data beyond the functionality we
+discuss below.</p></li>
+<li><p><code>WI_hatch$model.specs</code> is a tibble showing the model
+specifications used to predict the phenology.</p></li>
+</ul>
+</div>
+<div id="visualizing-phenology" class="section level2">
+<h2>Visualizing phenology</h2>
+<p><strong>hatchR</strong> has a built in function,
+<code>plot_phenology()</code>, that allows users to visualize their
+phenology results. The plot visualizes three specific components:</p>
+<ol style="list-style-type: decimal">
+<li>the temperature regime over which you are predicting</li>
+<li>the cumulative sum of effective values</li>
+<li>the effective value for each day in your prediction span</li>
+</ol>
+<p>The function allows you to output various figures based on your
+interests, but defaults to a figure with all information and lots of
+labeling.</p>
+<p>In the output of <code>plot_phenology()</code> the <em>cumulative
+effective values</em> are scaled by the warmest temperature in
+<code>ef.tibble</code> and the <em>daily effective values</em> are
+scaled by multiplying by 100 so everything is visibly congruent in the
+figure.</p>
+<p>Let’s look at the basic call, which gives you all the
+information:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">plot_phenology</span>(WI_hatch)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>You can turn of labeling or plot specific values using the function
+arguments <code>style</code> and <code>labels</code>, for example (plots
+not rendered):</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a> <span class="co"># shows a plot with just the ef cumulative sum values</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">plot_phenology</span>(WI_hatch, <span class="at">style =</span> <span class="st">&quot;ef_cumsum&quot;</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co"># shows a plot with just the ef daily values</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="fu">plot_phenology</span>(WI_hatch, <span class="at">style =</span> <span class="st">&quot;ef_daily&quot;</span>) </span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co"># turns off the labeling for a cleaner figure</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="fu">plot_phenology</span>(WI_hatch, <span class="at">labels =</span> <span class="cn">FALSE</span>) </span></code></pre></div>
+</div>
+<div id="negtemps" class="section level2">
+<h2>A note about negative temperatures</h2>
+<p>Occasionally, temperature data sets will have a few negative values
+or values very close to 0. Negative numbers below a certain threshold
+will output “not a number” (<code>NaN</code>) effective values because
+they are undefined in the model expression and will break the function.
+Similarly, even negative values above that threshold will produce very
+small effective values. Because these values are so small, we allow the
+model to accumulate them even though development below 0 is biologically
+unlikely. We <strong>assume</strong> your data set has been checked for
+these values and doesn’t include long periods of freezing, however the
+model allows for the occasional dip below freezing because the effect is
+so negligible toward development over incubation.</p>
+<p>A toy example of this phenomenon is shown below.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># vector of temps from -5 to 15 by 0.5</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">to =</span> <span class="dv">15</span>, <span class="at">by =</span> <span class="fl">0.5</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>x</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt;  [1] -5.0 -4.5 -4.0 -3.5 -3.0 -2.5 -2.0 -1.5 -1.0 -0.5  0.0  0.5  1.0  1.5  2.0</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; [16]  2.5  3.0  3.5  4.0  4.5  5.0  5.5  6.0  6.5  7.0  7.5  8.0  8.5  9.0  9.5</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; [31] 10.0 10.5 11.0 11.5 12.0 12.5 13.0 13.5 14.0 14.5 15.0</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co"># get effective values for those temperatures</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co"># You can see the NaN warning that shows up in our past applications</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>demo_ef_vals <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse</span>(<span class="at">text =</span> sockeye_hatch_mod<span class="sc">$</span>expression))</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>demo_ef_vals</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt;  [1]         NaN         NaN         NaN         NaN         NaN         NaN</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co">#&gt;  [7] 0.000472060 0.001071121 0.001670182 0.002269243 0.002868304 0.003467365</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co">#&gt; [13] 0.004066426 0.004665487 0.005264548 0.005863609 0.006462670 0.007061731</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="co">#&gt; [19] 0.007660792 0.008259853 0.008858914 0.009457975 0.010057036 0.010656097</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="co">#&gt; [25] 0.011255157 0.011854218 0.012453279 0.013052340 0.013651401 0.014250462</span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; [31] 0.014849523 0.015448584 0.016047645 0.016646706 0.017245767 0.017844828</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co">#&gt; [37] 0.018443889 0.019042950 0.019642011 0.020241072 0.020840133</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co"># bring together as a tibble</span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>demo <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x, demo_ef_vals)</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>demo</span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="co">#&gt; # A tibble: 41 × 2</span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt;       x demo_ef_vals</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt;        &lt;dbl&gt;</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; 1  -5            NaN</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt; 2  -4.5          NaN</span></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="co">#&gt; 3  -4            NaN</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; 4  -3.5          NaN</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="co">#&gt; 5  -3            NaN</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt; # ℹ 36 more rows</span></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="co"># plot (note NaNs are removed from figure)</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="co"># rectangle added to highlight the approximate temperatures of interest</span></span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a>demo <span class="sc">|&gt;</span></span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> demo_ef_vals)) <span class="sc">+</span></span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a>  <span class="fu">geom_rect</span>(</span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a>      <span class="at">ymin =</span> <span class="dv">0</span>, <span class="at">ymax =</span> <span class="fl">0.005</span>,</span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a>      <span class="at">xmin =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">xmax =</span> <span class="dv">2</span></span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a>    ),</span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">&quot;dodgerblue&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.25</span></span>
+<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Temperature (C)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Effective Value&quot;</span>) <span class="sc">+</span></span>
+<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-sparks2019" class="csl-entry">
+Sparks, Morgan M., Jeffrey A. Falke, Thomas P. Quinn, Milo D. Adkison,
+Daniel E. Schindler, Krista Bartz, Dan Young, and Peter A. H. Westley.
+2019. <span>“Influences of Spawning Timing, Water Temperature, and
+Climatic Warming on Early Life History Phenology in Western Alaska
+Sockeye Salmon.”</span> <em>Canadian Journal of Fisheries and Aquatic
+Sciences</em> 76 (1): 123–35. <a href="https://doi.org/10.1139/cjfas-2017-0468">https://doi.org/10.1139/cjfas-2017-0468</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

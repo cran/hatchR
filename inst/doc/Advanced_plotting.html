@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Advanced plotting</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Advanced plotting</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The goal of this vignette is to provide some examples of how you
+might access results from <code>predict_phenology()</code> and how you
+might plot your data.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(hatchR)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">library</span>(ggridges)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span></code></pre></div>
+</div>
+<div id="a-simple-example" class="section level2">
+<h2>A simple example</h2>
+<p>We’ll return to our first example with Woody Island to show how you
+might present data for a single spawning season. First let’s get our
+results and output them into a plotting format.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># run map to get a vector of models</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>WI_mods <span class="ot">&lt;-</span> <span class="fu">map_df</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;hatch&quot;</span>, <span class="st">&quot;emerge&quot;</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  model_select,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Beacham and Murray 1990&quot;</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;sockeye&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">model =</span> <span class="dv">2</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="fu">select</span>(expression)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co"># make vector of spawn dates</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>WI_spawn_dates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;1990-08-14&quot;</span>, <span class="st">&quot;1990-08-18&quot;</span>, <span class="st">&quot;1990-09-3&quot;</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># make variables grid</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>WI_var_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">model =</span> WI_mods<span class="sc">$</span>expression, <span class="at">spawn.date =</span> WI_spawn_dates)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co"># run pmap for all variable combinations</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>WI_results <span class="ot">&lt;-</span> <span class="fu">pmap</span>(WI_var_grid,</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>  predict_phenology,</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="at">data =</span> woody_island, <span class="co"># additional arguments required by function</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>)</span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co"># Now that we have our model results, lets put them in a tibble for plotting</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>WI_dev.period <span class="ot">&lt;-</span> WI_results <span class="sc">|&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="fu">tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a>    <span class="at">phenology =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;hatch&quot;</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="st">&quot;emerge&quot;</span>, <span class="dv">3</span>)), <span class="co"># add a phenology column</span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(stop <span class="sc">-</span> start), <span class="co"># column of the number of days (same as days2done)</span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>    <span class="at">index =</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)  <span class="co"># index for plotting later</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a>  ) </span></code></pre></div>
+<p>Now we’ll make a plot with the temperature and rectangles to show
+duration for the hatch and emergence periods.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># min and max for x-axis with 30 day buffer</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>x_lims <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">min</span>(WI_dev.period<span class="sc">$</span>start), <span class="fu">max</span>(WI_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>y_lims <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">16</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># filter data for plot</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>p_data <span class="ot">&lt;-</span> woody_island <span class="sc">|&gt;</span> <span class="fu">filter</span>(date <span class="sc">&gt;=</span> x_lims[<span class="dv">1</span>], date <span class="sc">&lt;=</span> x_lims[<span class="dv">2</span>])</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> p_data <span class="sc">|&gt;</span> </span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">data =</span> WI_dev.period, </span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>      <span class="at">xmin =</span> start, <span class="at">xmax =</span> stop,</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>      <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, </span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>      <span class="at">ymax =</span> <span class="fl">10.5</span> <span class="sc">-</span> index,</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>      <span class="at">fill =</span> phenology</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c), <span class="at">size =</span> <span class="fl">0.25</span>, ) <span class="sc">+</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> x_lims, <span class="at">y =</span> y_lims) <span class="sc">+</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;navyblue&quot;</span>, <span class="st">&quot;dodgerblue&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;inside&quot;</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>    <span class="at">legend.position.inside =</span> <span class="fu">c</span>(<span class="fl">0.75</span>, <span class="fl">0.75</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>    )</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>plot1</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>We can add some labels for days to hatch or emergence and change the
+labels on the legend.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>plot1 <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">geom_label</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="at">data =</span> WI_dev.period,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>      <span class="at">x =</span> start <span class="sc">+</span> (stop <span class="sc">-</span> start) <span class="sc">/</span> <span class="fl">1.25</span>, </span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>      <span class="at">y =</span> (<span class="fl">10.25</span> <span class="sc">-</span> index), </span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>      <span class="at">label =</span> days</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    )</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;navyblue&quot;</span>, <span class="st">&quot;dodgerblue&quot;</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Emerge&quot;</span>, <span class="st">&quot;Hatch&quot;</span>)) <span class="sc">+</span> </span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">fill =</span> <span class="st">&quot;Phenology&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Temperature (C)&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+<div id="plotting-multiple-years" class="section level2">
+<h2>Plotting multiple years</h2>
+<p>Let’s use the Crooked River data again as it has a number of
+continuous years of data without any temperature anomalies.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># spawn dates</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>spawn_dates <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2014</span>), <span class="co"># year vector to map for custom function</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="cf">function</span>(year) { <span class="co"># custom paste function</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">c</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-01&quot;</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-20&quot;</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-30&quot;</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    )</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    }</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="fu">unlist</span>()</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co"># run map to get a vector of models</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>dev_mods <span class="ot">&lt;-</span> <span class="fu">map_df</span>(</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;hatch&quot;</span>, <span class="st">&quot;emerge&quot;</span>),</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  model_select,</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>  <span class="fu">select</span>(expression)</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co"># variable grid</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>var_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">model =</span> dev_mods<span class="sc">$</span>expression, <span class="at">spawn.date =</span> spawn_dates)</span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="do">### multiple input mapping</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a>crooked_predictions <span class="ot">&lt;-</span> <span class="fu">pmap</span>(var_grid, <span class="co"># combos of variables to iterate over</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a>  predict_phenology, <span class="co"># function</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a>  <span class="at">data =</span> crooked_river, <span class="co"># additional arguments required by function</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a>)</span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co"># make duration dataframe</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>CR_dev.period <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>  <span class="fu">tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>    <span class="at">phenology =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;hatch&quot;</span>, <span class="dv">12</span>), <span class="fu">rep</span>(<span class="st">&quot;emerge&quot;</span>, <span class="dv">12</span>)), <span class="co"># add a phenology column</span></span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a>    <span class="at">days =</span> <span class="fu">as.numeric</span>(stop <span class="sc">-</span> start), <span class="co"># column of the number of days (same as days2done)</span></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a>    <span class="at">year =</span> <span class="fu">year</span>(start), <span class="co"># new column for just year (to facet wrap with)</span></span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a>    <span class="at">index =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">4</span>), <span class="fu">rep</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>, <span class="dv">4</span>))</span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> <span class="co"># new index because we&#39;re making 4 independent graphs</span></span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a>  <span class="fu">na.omit</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">2011</span>) <span class="co"># remove the 2010 year</span></span></code></pre></div>
+<p>We’ll now make similar plot as above but use
+<code>facet_wrap()</code> to break plots apart by year. We do this by
+cutting to make a developmental year because phenology spans two
+calendar years. As a result, we cut between Aug. 1 of one year and
+Aug. 1 of the subsequent year (August 1 instead of Sept. 1 to match the
+plot limits we’re setting up) and then make that a developmental year
+(the year the adult spawned). Then we can <code>facet_wrap()</code> to
+break the years up in the plot.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="do">### add a column called year (in this case the developmental year)</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>cut_ints <span class="ot">&lt;-</span> <span class="fu">ymd</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="st">&quot;2010-08-01&quot;</span>, <span class="st">&quot;2011-08-01&quot;</span>, <span class="st">&quot;2012-08-01&quot;</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="st">&quot;2013-08-01&quot;</span>, <span class="st">&quot;2014-08-01&quot;</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="st">&quot;2015-08-01&quot;</span>, <span class="st">&quot;2016-08-01&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  ),</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co"># cut to our cut intervals and label by developmental year</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>crooked_river_sy <span class="ot">&lt;-</span> crooked_river <span class="sc">|&gt;</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">cut</span>(date,</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>    <span class="at">breaks =</span> cut_ints,</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="dv">2010</span><span class="sc">:</span><span class="dv">2015</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>   <span class="co"># cut coerces our labels to factors, this changes them back to numbers</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(year))) <span class="sc">|&gt;</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">&gt;</span> <span class="dv">2010</span> <span class="sc">&amp;</span> year <span class="sc">&lt;</span> <span class="dv">2015</span>) <span class="co"># remove 2010 and 2015</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co"># make plot (facet_wrap by development year)</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev.period, <span class="fu">aes</span>(</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    <span class="at">xmin =</span> start, </span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>    <span class="at">xmax =</span> stop, </span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>    <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, </span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>    <span class="at">ymax =</span> <span class="fl">10.5</span> <span class="sc">-</span> index, </span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>    <span class="at">fill =</span> phenology</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> crooked_river_sy, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c), <span class="at">size =</span> <span class="fl">0.25</span>, ) <span class="sc">+</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> crooked_river_sy, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>  <span class="co"># set limits</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev.period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> </span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>  <span class="co"># facet wrap here subset plots on developmental year</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;navyblue&quot;</span>, <span class="st">&quot;dodgerblue&quot;</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Emerge&quot;</span>, <span class="st">&quot;Hatch&quot;</span>)) <span class="sc">+</span> <span class="co"># custom colors</span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">fill =</span> <span class="st">&quot;Phenology&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Temperature (C)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>As you can see, this allows us to put our figures on the same X scale
+despite flowing into multiple years. You’ll have to figure out the right
+way to cut up your data (or find similar alternative options). But this
+solves a primary problem of plotting phenology for multiple years, which
+is that our results span multiple years and may start and stop in the
+same intervals over multiple years (particularly for fall spawning
+species).</p>
+<div class="callout-note">
+<p>Note that we run out of temperature data in 2015, which is why it is
+cutoff relative to the others. If you really wanted to fix that you
+could be adding on the necessary dates with no temperature data to the
+<code>crooked_river_sy</code> tibble.</p>
+</div>
+</div>
+<div id="plotting-multiple-individual-spawning-events" class="section level2">
+<h2>Plotting multiple individual spawning events</h2>
+<p>Another common plotting scenario is that you might have data for when
+a number of fish spawn in a single or multiple seasons and want to
+represent those results.</p>
+<p>We can show a hypothetical scenario with the bull trout example
+above. In this scenario, let’s assume we have 300 spawning adult pairs
+that spawn in a roughly normal distribution with mean Sept. 15 and a
+standard deviation of 5 days (which makes Sept. 1st and 30th 3 sd from
+the mean).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># draw from a normal distribution with above parameters</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">322</span>) <span class="co"># allows us to draw same random sample every time for the example</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>fish_dist <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="dv">300</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">mean =</span> <span class="dv">15</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">sd =</span> <span class="dv">5</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>), <span class="dv">0</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># summary</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">summary</span>(fish_dist)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;    1.00   11.00   14.00   14.38   18.00   28.00</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co"># change 0s to 1s</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>fish_dist[<span class="fu">which</span>(fish_dist <span class="sc">==</span> <span class="dv">0</span>)] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co"># look at distribution</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">hist</span>(fish_dist)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># make a vector of fish dates and add mo_day to combine with fish_dist</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>fish_dates <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">date =</span> <span class="fu">seq</span>(<span class="fu">ymd</span>(<span class="st">&quot;2014-09-01&quot;</span>), <span class="fu">ymd</span>(<span class="st">&quot;2014-09-30&quot;</span>), <span class="at">by =</span> <span class="st">&quot;days&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mo_day =</span> <span class="fu">mday</span>(date))</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co"># loop for repping (could do with map, too)</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>fish_dates_norm <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="cf">for</span> (d <span class="cf">in</span> fish_dates<span class="sc">$</span>mo_day) {</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  day <span class="ot">&lt;-</span> fish_dates<span class="sc">$</span>date[d] <span class="co"># get date</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  spawners <span class="ot">&lt;-</span> fish_dist[fish_dist <span class="sc">==</span> d] <span class="co"># vector of spawners in fish_dist</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  spawners_date <span class="ot">&lt;-</span> <span class="fu">rep</span>(day, <span class="at">times =</span> <span class="fu">length</span>(spawners)) <span class="co"># make vector of date repeated the length of the vector spawners</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  fish_dates_norm <span class="ot">&lt;-</span> <span class="fu">append</span>(fish_dates_norm, spawners_date) <span class="co"># append to out file</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>}</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="fu">head</span>(fish_dates_norm)</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2014-09-01&quot; &quot;2014-09-02&quot; &quot;2014-09-03&quot; &quot;2014-09-03&quot; &quot;2014-09-03&quot;</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; [6] &quot;2014-09-04&quot;</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co"># now let&#39;s make the same vector for 2013 so we can compare two years</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>fish_dates_13 <span class="ot">&lt;-</span> fish_dates_norm <span class="sc">|&gt;</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>  <span class="fu">str_replace_all</span>(<span class="st">&quot;2014&quot;</span>, <span class="st">&quot;2013&quot;</span>) <span class="co"># replace all the 2014s with 2013 using string replace</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co"># add the two together in a vector and sort</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>fish_dates_all <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">append</span>(fish_dates_norm, fish_dates_13))</span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co"># looks good!</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="fu">head</span>(fish_dates_all)</span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2013-09-01&quot; &quot;2013-09-02&quot; &quot;2013-09-03&quot; &quot;2013-09-03&quot; &quot;2013-09-03&quot;</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; [6] &quot;2013-09-04&quot;</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="fu">tail</span>(fish_dates_all)</span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2014-09-25&quot; &quot;2014-09-26&quot; &quot;2014-09-26&quot; &quot;2014-09-26&quot; &quot;2014-09-28&quot;</span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; [6] &quot;2014-09-28&quot;</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co"># remember these all need to be in a character string for predict_phenology()!</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a>fish_dates_str <span class="ot">&lt;-</span> <span class="fu">format</span>(fish_dates_all, <span class="st">&quot;%Y-%m-%d&quot;</span>)</span></code></pre></div>
+<p>Now we can map hatch and emergence timing across the vector of dates
+we have created for the two years. Notice we have chosen two fairly
+thermally different years with quite different developmental phenology
+estimates (see plot from <a href="#plotting-multiple-years">Plotting
+multiple years</a>).</p>
+<p>Also, we’re going to take a short cut with our mapping so we don’t
+store all the results of each date (1200 total, 600 for each
+developmental period estimated) in our memory. So instead, we will pipe
+<code>|&gt;</code> our <code>pmap()</code> into a
+<code>map_dbl(&quot;dev.period&quot;)</code> command so we only are left with our
+phenology estimates and not all the other data we would have otherwise
+outputted.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># make variable grid for pmap (we use dev_mods from previous example)</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>spawn_grid <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">model =</span> dev_mods<span class="sc">$</span>expression, <span class="at">spawn.date =</span> fish_dates_str)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>bull_trout_dist <span class="ot">&lt;-</span> <span class="fu">pmap</span>(spawn_grid,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  predict_phenology,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">data =</span> crooked_river, <span class="co"># additional arguments required by function</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="co"># pipe!</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="co"># just output dev.period</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="do">### now let&#39;s add the key columns for plotting</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co"># first you can see the output and the spawn grid have the same number of rows so</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co"># we can borrow the format from the spawn grid</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="fu">length</span>(bull_trout_dist)</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="fu">dim</span>(spawn_grid)</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; [1] 1200    2</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co"># moreover from the grid, you can see that it predicts hatch for all the dates first</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co"># and then predicts emergence</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="fu">head</span>(spawn_grid<span class="sc">$</span>model)</span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;1/exp(5.086 - (x * 0.131))&quot; &quot;1/exp(5.086 - (x * 0.131))&quot;</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt; [3] &quot;1/exp(5.086 - (x * 0.131))&quot; &quot;1/exp(5.086 - (x * 0.131))&quot;</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt; [5] &quot;1/exp(5.086 - (x * 0.131))&quot; &quot;1/exp(5.086 - (x * 0.131))&quot;</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="fu">tail</span>(spawn_grid<span class="sc">$</span>model)</span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;1/exp(5.590 - (x  * 0.126))&quot; &quot;1/exp(5.590 - (x  * 0.126))&quot;</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; [3] &quot;1/exp(5.590 - (x  * 0.126))&quot; &quot;1/exp(5.590 - (x  * 0.126))&quot;</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; [5] &quot;1/exp(5.590 - (x  * 0.126))&quot; &quot;1/exp(5.590 - (x  * 0.126))&quot;</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co"># now we can borrow all that information to make the exact data object we want</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>bull_trout_dist_phenology <span class="ot">&lt;-</span> bull_trout_dist <span class="sc">|&gt;</span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a>    <span class="at">Date =</span> stop, <span class="co"># rename stop to Date</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a>    <span class="at">Phenology =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;Hatch&quot;</span>, <span class="dv">600</span>), <span class="fu">rep</span>(<span class="st">&quot;Emerge&quot;</span>, <span class="dv">600</span>))</span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> <span class="co"># make phenology column</span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a>  <span class="fu">select</span>(Date<span class="sc">:</span>Phenology) <span class="co"># select date and phenology columns to put in object</span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co"># make a similar object with spawning data (notice we name the columns the exact same)</span></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a>bull_trout_spawn_phenology <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">Date =</span> fish_dates_all) <span class="sc">|&gt;</span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Phenology =</span> <span class="st">&quot;Spawn&quot;</span>)</span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co"># combine spawn and hatch/emerge objects for a final plotting object</span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a>bull_trout_all_phenology <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a>  bull_trout_spawn_phenology,</span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a>  bull_trout_dist_phenology</span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">year</span>(Date)) <span class="sc">|&gt;</span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a>  <span class="fu">na.omit</span>()</span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a></span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a><span class="fu">head</span>(bull_trout_all_phenology)</span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 3</span></span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a><span class="co">#&gt;   Date                Phenology     y</span></span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a><span class="co">#&gt;   &lt;dttm&gt;              &lt;chr&gt;     &lt;dbl&gt;</span></span>
+<span id="cb9-56"><a href="#cb9-56" tabindex="-1"></a><span class="co">#&gt; 1 2013-09-01 00:00:00 Spawn      2013</span></span>
+<span id="cb9-57"><a href="#cb9-57" tabindex="-1"></a><span class="co">#&gt; 2 2013-09-02 00:00:00 Spawn      2013</span></span>
+<span id="cb9-58"><a href="#cb9-58" tabindex="-1"></a><span class="co">#&gt; 3 2013-09-03 00:00:00 Spawn      2013</span></span>
+<span id="cb9-59"><a href="#cb9-59" tabindex="-1"></a><span class="co">#&gt; 4 2013-09-03 00:00:00 Spawn      2013</span></span>
+<span id="cb9-60"><a href="#cb9-60" tabindex="-1"></a><span class="co">#&gt; 5 2013-09-03 00:00:00 Spawn      2013</span></span>
+<span id="cb9-61"><a href="#cb9-61" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span>
+<span id="cb9-62"><a href="#cb9-62" tabindex="-1"></a><span class="fu">tail</span>(bull_trout_all_phenology)</span>
+<span id="cb9-63"><a href="#cb9-63" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 3</span></span>
+<span id="cb9-64"><a href="#cb9-64" tabindex="-1"></a><span class="co">#&gt;   Date                Phenology     y</span></span>
+<span id="cb9-65"><a href="#cb9-65" tabindex="-1"></a><span class="co">#&gt;   &lt;dttm&gt;              &lt;chr&gt;     &lt;dbl&gt;</span></span>
+<span id="cb9-66"><a href="#cb9-66" tabindex="-1"></a><span class="co">#&gt; 1 2015-04-11 00:00:00 Emerge     2015</span></span>
+<span id="cb9-67"><a href="#cb9-67" tabindex="-1"></a><span class="co">#&gt; 2 2015-04-13 00:00:00 Emerge     2015</span></span>
+<span id="cb9-68"><a href="#cb9-68" tabindex="-1"></a><span class="co">#&gt; 3 2015-04-13 00:00:00 Emerge     2015</span></span>
+<span id="cb9-69"><a href="#cb9-69" tabindex="-1"></a><span class="co">#&gt; 4 2015-04-13 00:00:00 Emerge     2015</span></span>
+<span id="cb9-70"><a href="#cb9-70" tabindex="-1"></a><span class="co">#&gt; 5 2015-04-17 00:00:00 Emerge     2015</span></span>
+<span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span></code></pre></div>
+<p>Before we plot, let’s briefly walk through what we did there. First
+we made our predictions but then only output the start and stop data
+with the <code>map_df(&quot;dev.period&quot;)</code> command. Next we added a
+<code>Phenology</code> column with the appropriate phenology type
+determined by the structure of our <code>spawn_grid</code> object. Then
+we made a similar object for spawning which we combined with the mapping
+ouput all into <code>bull_trout_all_phenology</code>. The reason for
+this is we will plot the distributions of spawning, hatching, and
+emergence across years.</p>
+<p>You can see we also need to cut like we did before to add a
+developmental year and we use <code>geom_blank()</code> and custom
+limits to set everything on the same scale.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># before we plot, because we are again plotting across years we need to cut up our data</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"># still need 2012 and 2015 because phenology will leak over</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>cut_ints_1314 <span class="ot">&lt;-</span> <span class="fu">ymd</span>(<span class="fu">c</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="st">&quot;2012-08-01&quot;</span>, <span class="st">&quot;2013-08-01&quot;</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="st">&quot;2014-08-01&quot;</span>, <span class="st">&quot;2015-08-01&quot;</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>), <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"># cut according to our cut intervals and label by developmental year</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>bull_trout_phenology_cut <span class="ot">&lt;-</span> bull_trout_all_phenology <span class="sc">|&gt;</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">cut</span>(Date,</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    <span class="at">breaks =</span> cut_ints_1314,</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="dv">2012</span><span class="sc">:</span><span class="dv">2014</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(year))) <span class="sc">|&gt;</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>  <span class="fu">na.omit</span>()</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co"># look to see max development days to make custom lims</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>bull_trout_dist <span class="sc">|&gt;</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">phen_days =</span> stop <span class="sc">-</span> start) <span class="sc">|&gt;</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>  <span class="fu">slice_max</span>(phen_days) <span class="co"># output max value</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt;        start       stop phen_days</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; 1 2013-09-28 2014-04-30  214 days</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt; 2 2013-09-28 2014-04-30  214 days</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co"># make custom lims using 30 days before first spawn and 244 days max (214 + 30) from above</span></span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co"># makes a 30 day buffer</span></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>cust_lims <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">min =</span> <span class="fu">c</span>(<span class="fu">ymd</span>(<span class="fu">c</span>(<span class="st">&quot;2013-08-01&quot;</span>, <span class="st">&quot;2014-08-01&quot;</span>), <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">max =</span> min <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">244</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">&quot;type&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;Date&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2013</span>, <span class="dv">2014</span>, <span class="dv">2014</span>))</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a></span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a><span class="co"># make plot</span></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> cust_lims, <span class="fu">aes</span>(<span class="at">x =</span> Date)) <span class="sc">+</span> <span class="co"># we use geom_blank to keep everything on the same limits from our custom lims object</span></span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a>  <span class="fu">geom_density_ridges</span>(</span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a>    <span class="at">data =</span> bull_trout_phenology_cut,</span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> Phenology, <span class="at">color =</span> Phenology, <span class="at">fill =</span> Phenology),</span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a>    <span class="at">jittered_points =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_points_jitter</span>(<span class="at">width =</span> <span class="fl">0.05</span>, <span class="at">height =</span> <span class="dv">0</span>),</span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a>    <span class="at">point_shape =</span> <span class="st">&quot;|&quot;</span>, <span class="at">point_size =</span> <span class="dv">2</span>, <span class="at">point_alpha =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.7</span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(cust_lims<span class="sc">$</span>Date) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">1</span>), <span class="fu">max</span>(cust_lims<span class="sc">$</span>Date) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>))) <span class="sc">+</span></span>
+<span id="cb10-46"><a href="#cb10-46" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-47"><a href="#cb10-47" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-48"><a href="#cb10-48" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-49"><a href="#cb10-49" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span></span>
+<span id="cb10-50"><a href="#cb10-50" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb10-51"><a href="#cb10-51" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAEgCAIAAADT5FumAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAgAElEQVR4nO3df2wbdZ438Pe0KbAEFgroYelkODtNek2DaO8o543bLPKR7qNkK7PS5bIo0jrZI2qa25Vcl6WHNgs6wUbaCyxO/uDS5h6dgytFbOTVQy223iVlvUuoI+sKol1CljiNszjTBVRYHqCBkoKfP8Y/Js6Puj9sz4/3SwjNjGeSr+N63v585+v5CslkEkRERHqzptQNICIiuhwMMCIi0iUGGBER6RIDjIiIdIkBRkREusQAIyIiXSordQOKQRCEUjeBiIgu37Lf+DJFgGGFJ09ERBq3SgXCLkQiItIlBhgREekSA4yIiHSJAUZERLrEACMiIl1igBERkS4xwIiISJcYYEQaNnOwccMGURRFUdw/mtk6un/DBlEUNzQenFlm/0U7KsduUG8kMgoGGJFmje7feeSBV8/IsiyPPTbZpuTVzMHGNjx3RpblVx84slMdTKP7xfonT2ZWZw42tmFIlmVZfvXxyTZGGBkOA4xIq0ZDzz+4f28lAKBy7/4HT06dBnB66uSDjbsAoPLbD2x9PqTk0uj+DRvaJh8bemxr5vDKvaEzz+xC7p5EhsEAI9KqXc+kAwjAaOj5rZs2AjOnJ7du2qhsq9xYg8nTM6l9z5wJ7d24/E+aeelIOvWIjIMBRqR9Mwcb2yYff3ZvJXB66uTF91986IYNO5/A4z9ifpHRMMCING50/4adRx54NaR0Jm7ctPViByxSuTd05syZM/undi4d8kGkbwwwIg2bOdi4oQ3PnUmlF4DKjTXKtTAAM6cnUbOxcsWjVXY1Ppg5jMggGGBEWjVzsHHnEzXPqS6EAcDGTVuff0YZj7j6la3R/apx9ulLaEQGYpb5wIh0Z+alI6cE4VS7+Mv0lu8Nyc/sqtwbem5qw07xSSF592Ovhla+srXrmVdPN9aLTwJIJu9+/NVsFUdkDIIZZnoUBFM8TSIi41EmtFz2HM4uRCIi0iUGGBER6RIDjIiIdMksgziUXlQiIjIMVmBERKRLZqnAOApR7YDnRfVqr3d3qVpCRHTZTDG+nMPo1Q54XtxSe7t6y1sT7zHDiEh32IVoLkvTC8CW2ttzajIiIu1jgBERkS4xwExk2fJLwSKMiHSHAWYWq6QXEZEeMcAohUUYEekLA8wU8iy/mGFEpCMMMONj5yERGRIDjBZhEUZEesEAIyIiXWKAUS4WYUSkCwwwg+MFMCIyKgYYERHpEgPMyC67/GIvIhFpHwPMsNh5SETGxgCj5bEIIyKNY4AZ01Upv5hhRKRlDDAiItIlBhithkUYEWkWA8yAOHyDiMyAAUZERLrEADOaq15+sReRiLSJAWYoBeo8ZIYRkQYxwCgvzDAi0hoGmHFw7AYRmQoDjPLFIoyINIUBZhBFK7+YYUSkEUIymSx1GwpOEAz+NIvcefjWxHu93t1F+3VERMsy+JldYeAAU+qh4l/6YoYRUckV4cwe9Tp7wqllR3fQYyvw71vKiAH2ye8Ov/Ob1+Mba7+emDx3a82NH099PL+QvL72Jkx9PL+QXFe7ZmHiq2tqhS8mkgDKaoULE0kAQq2QnEgq/8+sqravTU58CWBN7bqvJhYAlNVee2HiPAThti23CHOf31ixJjF57taa29bj/FsTH/3Au7umlH8EIjK1sgL//KjX2YPuYNAGAHLA3eUODPQ3iwX+rYZ3wPMHALfcdEMJ21C+7hpf+noYqzEiKr4CB5icmIWjNV1zic2tDv/wuNzcLEa9zojkmvX744DVlck0OeDu8scBpIo1OeDuSrQGPTblobF6Zc+o1zksDRxAby/qLX5/OLN/YZ9NaalHT2ypve3s3PyFErYGACDV3n4jgMVtY5gRUXEUOMDEunqrv8ctpRPK5glmQibsH3MNBPvFqNfZ5ZWCHhui3q6x+oFgv6jElTca9NTVW8cSMmyiPD4WR9wyB4iQE7PW+hYR44j7x+oHgkERUa9zONBiy9Z227dvL+xTK5iVhvktDoZPfnf4nU9xzTe/X+b7t3hdR9Ufnzg5/dcLUkfVl0+8Pv1XfL3j+g88n67vKHvPswCgvAP/zwMA13TgvAfoADwAsgtrO3DBA3SUw/MxgOs6bvrMczYJlHes/8TzniCUbe2oLTv87l2pX3fvN/Hufz0xu7Pj3qVdiBymSEQ5CvS5ttBdiGJzf7A56nU6nQAWFVuAo7VZBGBrcVl7EzJsoireRMmCBACxrh6943Jz81wCLpfDH4l6bBXjY6g/IKp/BiokazwxB2QC7MSJE5lGCIJQ4Kd5Nem9gtF7+4lIL4ryPTCbJ6gYqB/rcgdkZatVqlAWRMkST8yl9o16nU6n05kZ95F6MBoJW6Q6yRqORDGXiFskXkYjIjK3AgdY1Ov0RrOrYnOrI5tVaXJiVgmzqNfpjNiVqHNZU4/a7I5wJJCYddhtYl29dTYRiIQddkNf7SIioosrcIDZ7I5wjyrCopFwpvCK+0eiABAd8aO+TkyN+FBF02xCTv8Mvx9ShdKh6Pczv4iIqNjfA8tcA4t6ncNwIBxeNAoxOwjR6nAgjGXHH/YgNd5QNURx0fLSJ2nA74ERLW+qfW3Olk1DX5akJUSFVqozuzIQvkjfCGOAkeFlcqt8W+4gmnNvXJ1xoQxC0ppCj0IkooJT0mtpdClW2n55v4UxRtphitKEFRgZ0ipVV+Eo9RxjjLTAFGd2BhgZz+pVV6FluiWZZFRCpjizM8DISEobXTnUF9gYZlRkpjizM8DIGDQVXUuxLKMiM8WZnQFGulaSa11XgtfJqDhMcWZngJEe6S63cjDGqNBMcWZngJGO6D23cjDGqHCKfmZfesuMVW+isdqjqx+owgAjjVPfPsMYuZWDMUaFUJS70RMZ1vSHh/rPL7MM4HC8c+tH2dWX5378T1PtZVPta6fa1061l6X/WzvVXrZ23R3Xbdtdvm13+bbdwCvzbxz9LHvg8cWrL6dXf794+2/Sqy+tsH3p6ioPqVdzto+nVzMteX25Jp2af+Po5wBwev7ksXXbdpdv+0fVsy7L+ct8CqJLprE7ceTOyBz1dvnjQI9Tuf9h5raKVtdAfzMAIJLeZPgZmUkv0uWUAOD99rL3kcysXrftO+lS6/X5N94VtjV9DQDOfj7x5xI0tOiuuXnLWot1DebOvXEy5y8z3162aajkc4yTzmiqC1F1g8TMxuyjqiOVHQ+gt8sP5U7AS+6tqJ6R+bXXXtNRF+LSm7GShmXmSk1mltMn4sPxzqfXHzp5c2qHl+d+/J83P/2rG1KrrbH2X31t6HzFMg/9faz9j2uHFipTq/ZY+/+UDS2kJxiyxNplYWihCrWx9qk1QwsbU9uvjbV/JQwtVOEbsfYPhKGFqtztivJY+xfp1ZyHboi1n1et3hRrnxeGFqpyd7s/1v7KuqEFS7YlmeeibtLeWPvhG4bO3YGnp/+lb/1/z92K6Q8P/bq8033tCn+ZM/yXb1wF6j0uSQUW7nGGF29xAACWmZE5Sx4fiztabaod5YAhZ2TmdQJdyZyUs8ulbpJe8V8+XaqSBNji3j454O7KZpVq8hWHPee4zFRiRERkepoaxLHsjMwqSydzJiIis9LSIA45MYt0JyGgzMicXRPr6q3+SNRjs6WvkA1IpWglEVFpVPgezWe3uR/8vNAt0QgtBZjYfMDl7nI6AcDqcCgXtWx19Va/Mgqxub/b60w97BrotyEwXNoGExEVUk5i7ZJqLuOoDOMFmym+4csvMhORjmQSKM/EytNoYlJZMEySmeLMzgAjIl0oUHTlUJLMADFmijM7A4yINE6JroLmlpoxqjFTnNkZYESkZRW+R4sWXTl0XY2Z4szOACMiDSpOh+FF6TfDTHFmZ4ARkaYUucMwH3qMMVOc2RlgRKQFGim5VjGamNRRhpnizM4AI6LS0mDJtRIdlWKmOLMzwIioVHQUXWq6iDFTnNkZYERUZNrvLbwo7WfYVT2zq6ajTLO61JN0lQgDjIjy9v7BP0x8+z5H5TKr0fsOv/Kv33/ke6mH/tQ2cvyhlodal7t1099JNbelFk8fSyx8Tdq8AzPHEl+US5vrUtunjiW+Widtvg/TxxIXrpM270xtf/tYIilIm+/H28cSybXSZsdy2wVp8/2XvD1+LHH+69Lmf0j96usXEvO3SZu3ZRsgH0t88g1p8104+/vEh3dKmypV3xj7xQ9+nvPEv3WFf+krdtXvhciJkYnIyB72PfqwavVl36O7pPJjqSRQfPr6Xz4oRdMKYpe0Mf7Bu/JnCzlP/KGStSirODfzlQPuXtRb/P4wlKJMGlFm/VIVaJmJwNIRKAfcvQkLwuG4siW9g9XhwKx0QDluyVFERFfmZzO//dnMb3O2ZJa3SDXpTqVPX//LB3fe8TfAO8VsXqmon/hoIrG07ix+Z2PR7kYf9ydag0EP5IC7q8vp6E4vj0SbPTYg6u2ZdQ0Em0U54O7yRlNhFA+jO6jM0pzZAVGvswcuLNq46CgAwPbt24v11K6yPGdMIKIC+Wnl/16lC/GhhrZFPWkNbd/Cc3f63r63oW0wd7viF5LvbEVDmw/9ku9da0ObL7X9Sck3f3NDmw//Ifk+uj27/SeSD2ho8+HfJd/58mW2/0TyYe0y27slX7Isu/0xyXfh2vT+aGjz4VnJN/e3DW2+1K++82yq2ZkG/NLqO/WthrZf4NjdQ8f/uaHtR6m/QMj/zvu5T3xJF+Iq564CZdtVD7BwjzOcXctWWFZXiw1QpvUaq08tSxaMJWTYxGgkbK0fEAGIza0OZ2raL8BhT0VSNBJ2tAZFALC1uKy96Y3LHgUAJ06cyLRCEISr/TQLSMuXTIlM4P2Df5godRt0yQAV2GV35cX9XU5/atkqqaeyBCAnZq1SSz5HlXrACBERFUc+ARbqFJoGYe+LHXdXFa4lS5JPVi2LkiUemQOWxBMvfRERmdSaPPZpPJRMHt0T2VctCIIg7OifvvrNsNkd4eGADABRr9MdkFfbYSQ9VP+iRxERkWFd6heklGoMwHIV2TLfA1NKJDng7kVq3KB6Oep1DksDOeMJ09fN5IC7K9GaLbDSOzhcrtkx5I5CXO0LZ/weGBGR8VzemT0bY8Ceo8lDjVe1TReRG2wXxwAjIjKeSxvEMd2/o3pfBMjGVqhTaNqxpbBXx4DFxZ3VNdDP615ERCaXZ2myNLnSQp1CE4pdhF0iVmBERMaTz5ld6TAselfh1cMAIyIyHlOc2RlgREQGlLy4o3tWOX7P0Tx+QokV7Y9pcvfcc0+pm0CXjK+avpjz9Vrp3J7PII7GR/rsg/vuUnUhhjqFpjf7Ysfd6N9RLXRqvXORGVYc27dv559ad/iq6QtfL7V8vsgcempfZM9RdUY1Hjq6J7LvqRCq3D/dg8EXQgVrHxER0bLyCTAiIiLNyWt0w3T/jurluxCrpvt3VI+0FP57YERERIvk9UXmKvfx5KZO9aQke44mjzcqwYa+GNOLiIiKjePLiYhIl3gNjIiIdCnfAJvu3yGoFGROFSIiorzlFWDpQRwZR+/aV80MMzM54HameaOr77fa41RUfDl0hvMcXsQVfg+MzEgOuLvG6geCim708E1GVADRCByWsXG+uVZ0adOpEAHREb+lO5iZPdTmGXC5u0aizcoMbeopRlsTXf440ONE96XM30bFoJqhyKG8PHLA3Yt6i98fVm2kkpEDw7PSgVb0jsvNytst6nVGJNes3x9fNPFvb8KCcDhuxlcsnwqs8ZE++2BTp6reCnU2Ddr7HtH0/aOoQKKRsFWqUG8R6+qt4UgUgBxw96BbKcws/t5Ey4DLyjOhFkW9mSJ6wDXbk+5XjPvHpIFgMBjsdoSHWVaXlDw+hvo60Wa3+Eey3b5hv/K6dVv8XZlXLYzWYNCU77K8roFVuY/H+t5syo7hSH2LudCNI42ySOKidVGyAADk8bG4w668jWyeYH+zmHskaYTq5Um/egAAR6uytUKyxhNzpWgZKVL5BdjsDuXjoSL1CtlaXNbZROojRvpNZz75diFWuY8n3QVtCemXnJgF7ACAnOKMNCzT2ws47KVtCuWSx8fi8XiX059aj3psNkD1BhMlSzwyB5j7/cbvgdElyvlAiMWFFz+260PU63RG7KkuRGupW0O55PExuNLjpILduW85AHJilp8WVwuwUKewuk6OQjQlW4trtic7Gjvq7fLD1WKD+mIYR2xrh2oo9lwirpz05MTson6nTGcUaYI8PmZpzfbAqz40xlMXxKIjfqWH0dxW6UJsPJRMHipeS0g3xOb+oOR1Op3KqqM72G/LPNKdfsDqGui3iXLC6ucoxJKyebojzlRflNU14BEBiM0HXO6u1AvlcCjXu0z/cV4z5PExi71ftcFmd/QMB1paAasDw05nT/alNDfeC5GISBeiXuewNMDBUVm8lRQREenSlc4HVtjWERERrSCfAAt1Ck1QxddK24iIiIqGw+iJiEiX2IVIRES6lNedOKrcx2PYUS0ImS12phcREZUUh9ETEZEumWI6FUFVOxIRke4sW2vlF2DT/Tuq90Vyt+7R0ShEFppERHq0SgWSTxfikjEceiMI7CklItIlJcCWPYfnM4w+9lYEe76r1/QiIiJDyifAqrdwsiAiItKY/PrWdH7fDXYhEhHp1BV2IYY6mwaBwSbOB0ZERJphitKEFRgRkU5dYQVGRESkOZc8H1hnCNP9OzghGFExzBxs3LBBFEVRFPePZraO7t+wQRTFDY0HZ5bZX7XjqluJ9C6vAAt1CtUjLbHk0T0AgCr3c33YV81LYESFNbp/55EHXj0jy7I89thkm5JXMwcb2/DcGVmWX33gyE51Lo3uF+ufPLnkp8wc/OGTp3gzGjKgvAZxvDCIPT9V37u3yv3TPRh8gQlGVECjoecf3L+3EgBQuXf/gyenTgM4PXXywcZdAFD57Qe2Ph9SEmx0/4YNbZOPDT22NeeHzBz84ZGa793Na8BkQLwGRqRVu54588yu9Mpo6PmtmzYCM6cnt27aqGyr3FiDydMzqX3PnAnt3ZjzI2YO/vDIA8/+aFPR2kxURPkEWOMjffbBn6kveoU6mwbtfY/o9GthRHozc7CxbfLxZ/dWAqenlnYSrnzYD4888GyqhiMynHznA0tu6hSEfQDQJAxyPjCi4hndv6Ft8vFXQ0oQbdyU20m4EiW+QpVA7lAPImPIezqVxkPJ5KFCtoSIlpg52LjziZrnzoQyXYmVG2tOhk4DlQBmTk+ipnGFAmvmpSOnTp2qF58EAAhoFycfGwuxHCMD4TUwIq1Kp1f2QhgAbNy09flnlPGILx1Jj+dYRuXekJwy9tjdye8NyUwvMpj8AizzLTDeSoqoWGZeOnJKEH7ZLmbsHwVQuTf0XM0TO0VR3HnkgVefWSm/iIyP84EREZF2cT4wIiIyGs4HRkREusT5wIiISLtW6UJc5cwe6hSaBlf7sXv0EmkMMCIinbq8ADMO5fkTEZFOcT4wIiIyjovciUPVjaibDsNlmaHQvAwHPC9uqb1dveWtifd6vbtL1R4iovytVoGFOoWmN/tiyWQymYz1vdnEby4by9L0ArCl9vYDnhdL0h4iokuySoBNT72ZnQasyv1cn50zgBnHsumlYIYRkS6sEmCxtyK5m96cml5uTyIiomLjIA4zWqX8IiLSCwaY6eSTXuxFJCLtY4AREZEuXSTABpsyk6dU74sgsq+a06mYBIswItI4s9yJwwxPMx+XevWLXwsjIs1iFyIREekSA8xEOPiQiIyEAUZERLrEADOLyyu/OJSDiDSLAWYKV9J5yAwjIm1igBERkS4xwOjiWIQRkQYxwCgvzDAi0hoGmPFx9DwRGRIDzOCYXkRkVAwwyhd7EYlIUxhgRsbyi4gMjAFmWIVILxZhRKQdDDC6NMwwItIIBhhdMmYYEWkBA8yYePWLiAyPAWZARUgvFmFEVHIMMKMpWu3FDCOi0mKAGUqRew6ZYURUQgww4yhJljDDiKhUhGQyWeBfEfU6e8KpZUd30GMr8O9bShCK8DRL5ZPfHX7nN6/HAVyzZu2tNTd+PPXx/ELy+tqbMDV/y6YLcxNJANfUCl9MJNfUCl9NJAEItUJyIqn8f+XVtcmJLwGsqV331cTC9bXC/EQSwI215efemr9lyy3C3Oc3VqxJTJ774qsvAVSvv23n49+sKd0fgojMpqzAPz/qdfagOxi0AYAccHe5AwP9zWKBf6up/Ob1+C033bC+Yk1i8lxJGnBH7e3rcf6tibMxz4sAer27S9IM05pqX6te3TT0ZalaQlRkBQ4wOTELR2u65hKbWx3+4XG5uVmMep0RyTXr98cBqyuTaXLA3eWPA0gVa3LA3ZVoDXpsykNj9cqeUa9zWBo4gN5e1Fv8/nBm/8I+G+1Q99r9r5uuv1DCpqSVr7vmlk3rExPvqdvGMCsoJbrKt+1eupExRmZQ4AAT6+qt/h63lE4omyeYCZmwf8w1EOwXo15nl1cKemyIervG6geC/aISV95o0FNXbx1LyLCJ8vhYHHHLHCBCTsxa61tEjCPuH6sfCAZFRL3O4UCLLVvbbd++vbBPrShWurykCoZPfnf4nU9xzTe/X+b7t3hdR9Ufnzg5/dcLUkfVl0/M7uz4bMgzD2B9R9l7noXrOq6d93wOAB1r4Pnymg6c9wAAOgBP+v/A2g5c8AAd5fB8DOC6jps+85yVOq592/M5IFR2fGPq4Xe2dtSWHX73rtQvvfebePe/npjd2XGvugvxgOdFXh4rqA7gnXX3YuK9RVvX3QsA7WsB/J/1R0rRLqJcBfosW+guRLG5P9gc9TqdTgCLii3A0dosArC1uKy9CRk2URVvomRBAoBYV4/ecbm5eS4Bl8vhj0Q9torxMdQfENU/AxWSNZ6YAzIBduLEiUwjBEEo8NMsFF1XMLpuvPZNta8t37Z75YuOuwF0vPEAWI2RcRVlFKLNE1QM1I91uQOystUqVSgLomSJJ+ZS+0a9TqfT6cyM+0g9GI2ELVKdZA1HophLxC0SL6ORiSnpddHdlH1yLpIRGUaBAyzqdXqj2VWxudWRzao0OTGrhFnU63RG7ErUuaypR212RzgSSMw67Daxrt46mwhEwg67aa52EeXKM70U5dt2l2/bzQwjQypwgNnsjnCPKsKikXCm8Ir7R6IAEB3xo75OTI34UEXTbEJO/wy/H1KF0qHo9zO/yLwuKb0ylAxjjJHBFPl7YJlrYFGvcxgOhMOLRiFmByFaHQ6Esez4wx6kxhuqhiguWl76JI38PTAyl8sLsIxzb+QOq+EVMtKvUp3ZlYHwRfpGGAOMjOEK02tZSqQxxkiPeCspIh1QOgCvenqBAz1Iz0xRmrACI10rUHTlOPfGi6zDSF9YgRERwIEepEOmKE1YgZFOLXuzqILiJTHSEVOc2RlgpDvFjy61zGBFJhlpmSnO7Aww0pfSppfa0mH3YKqRZpjizM4AI13IXH/SQnStJCfSGGZUQqY4szPASON0EV1LsaeRSqvoZ/alt8xY9SYaqz26+oEqDDDSIPV4P33l1lIc+kElwWH0RAUy/eGh/vOLl6fayzL/Xbdtd/m2DQLWrNm2Gzj7+cRr6dP/K/NvHP0MAI6nFwC8nF7+/fwbRz/Db9KrLy1eXbqQs7zsPuOLd1D/utcXP/T79Oqp+TeOfp7aeFoQrgMEZRT+VHtZ+okfjndu/WiZv8zLcz/+p0/z/juSosL3qPJfqRuiIYWeD+wS5c7IHPV2+eNAj1O5/2HmtopW10B/MwAgkt5kqhmZSUem2tcCAoCz4w+Xb9v62amZsru3fDnx51K36ypbt+0716QW58+OP3x2/GFl5f32sveR7f9glXapMom1S6pRb5n7wc9L1ibN0FQXouoGiZmN2UdVRyo7HkBvlx/KnYCX3FtRPSPza6+9ptMuRH6rVM9S06huGroATH946Nflne5rcTje+fT6Q898+uP/vPnpX92A1lj7r742dL4CL8+ltgD4+1j7H9cOLVTCHmv/n7KhBSsAWGLtsjC0UIXaWPvUmqE1X7V/JQwtVOEbsfYPhKE1ydRqeaz9C2FooQrXxlJbANwQaz+fXgZwU6x9fvE+98faX1k3tGDJNj7z6zItVCi/fWEj9sbaD98wdO4OAHh6+l/61v/33K2pfXKe7Mmb0z80/e85M8GsLt+VRfOP9z0CoO6D08s+On7rRgC/+8NTRW3T5SrQB5eSVGDhHmd48RYHAGCZGZmz5PGxuKPVptpRDhh+RmZ+XNWz1Hm81M3QkPS/Z3Va0zKUGitVcknLT7u9C0A65ExbjZUkwBb39skBd1c2q1STrzjsOcdlphIjIjKoCt+ju1YIraV2STWjiUnTdipq6hpYarKvoCc31VIW11hERAZzSemlMPO1MS2NQlxhRuYUsa7eGo4okzvLAbdTNc8zEZH+XUZ6qSnHmmqkopYqMLH5gMvd5XQCgNXhUC5q2erqrX5lFGJzf7fXmXrYNdBvQ2C4tA0mIrpKrjC9FOpqzAylmCm+4csvMhORll2V9Moxmpg0fIZpqQuRiMh8CpFeAHZJNYbvSzRFacIKjIi0qUDplTGamIRxR3aY4szOACMiDSp0emUYtTvRFGd2BhgRaU3R0kuhlGIwVjVmijM7A4yINKXI6aVmpCQzxZmdAUZEGrHoNlElZYDLY6Y4szPAiEgLtJNeGbouyExxZmeAEVFpaTC6cuhxoIcpzuwMMCIqiaWzeWmZ7joVr+qZXTUdZZrVpZ6kq0QYYER0xd4/+IeJb9/nqMwuAIjed/iVf/3+I9/Dn9pGjr98LpZzzK1l1995x9/cllo7fSyx8DVp8w7MHEt8US5trgOAqWOJr9ZJm+/D9LHEhesk4fNEUpA234+3jyWSa6XNDrx9LJEUJCGp2i5Im+8HkF1eugAgfixx/uvS5n/I/goA7xxLzN8mbd6W+nWbd0I+lvjkG9LmuwDg7O8THwBOMx8AAAdySURBVC7gS6RiLPNMM09T7U9tI8cfannoW4X6g1/cVb8XIidGJiKzqPD9XwAP+x5V5p/+O6nmtmxCAPj09b98UMr2XZaNUk2lqnb82cxvAWwsu3XVg0qjODfzlQPuXtRb/P4wlKJMGlFm/VIVaJmJwNIRKAfcvQkLwuG4siW9g9XhwKx0QDluyVFERAVQ4XsG6bN5ZmGXdMfxuQ8sFRtFfWbVKnZJNcAX8Q8+vv3W267HR6OJv2RyWu1l1d2qit/3WLS70cf9idZg0AM54O7qcjq608sj0WaPDYh6e2ZdA8FmUQ64u7zRVBjFw+gOKrM0Z3ZQZg1zYdHGRUcBALZv316sp1ZAhr+VGZFezP1g/0pdiA81tCldiA81tH0Lz93pe/vehrZBANmNil9IvrMVDW0+9Eu+d60NbT4AeFLyzd/c0ObDf0i+j25vwJ99QEObD/8u+c6XN7T58BPJBzQAPqzNrirHdku+ZFlDmw+PSb4L1+Y++qzkm/vbhjZf9lcA2eYpv67Nh19afae+1dD2CwA4dvfQ8X9uaPtRqsGX1oW4yvmqQNl21QMs3OMMZ9eyFZbV1WIDlGm9xupTy5IFYwkZNjEaCVvrB0QAYnOrwxmJemw2ANnpwaKRsKM1KAKArcVl7U1vXPYoADhx4kSmFYIgXO2nWSQ6uppKZHTvl7oBWmeACuyyu/Li/i6nP7VslWQs+iFyYtYqteRzVKkHjBARUXFoZ0LLJcm3aDpmyRKPzAFL4omXvoiITEoj84HZ7I7wcEAGgKjX6Q7Iq+0wkh6qf9GjiIjIsAr9PTClRJID7l6kxg2ql6Ne57A0kDOeMH3dTA64uxKt2QIrvYPD5ZodQ+4oxNW+cMbvgRERGY8Oz+y5wXZxDDAiIuPRzjWw1amLO6troJ/XvYiITM4UpQkrMCIi49HIIA4iIqJLwwAjIiJ9SppAqf/GJnXPPfeUugl0NfEFNQCdvogrndv1MojjijDDSmL79u38yxsJX1ADMNiLyC5EIiLSJQYYERHpEseXExGRLrECIyIiXWKAERGRLjHAiIhIlxhgRESkSwwwugrkgNuZ5o2uvt9qj5NW8JUyAuNPk8gAoyslB9xdY/UDQUU3eoz+piHShWgEDsvYuJHfjKa4EwcVUnTEb+kOZiYTtXkGXO6ukWizMmGbesbR1kSXPw70ONF9KdO5UYmp5jJyKK+cHHD3ot7i94dVG0lb5MDwrHSgFb3jcrPy9ox6nRHJNev3xxfNG9ybsCAcjuvyZWQFRlcmGglbpQr1FrGu3hqORAHIAXcPupXCzOLvTbQMuKw83elM1Juprwdcsz3pfsW4f0waCAaDwW5HeJgVt/bI42OorxNtdot/JNsXHPYrL2a3xd+VeSnDaA0G9fmuZIDRFbNI4qJ1UbIAAOTxsbjDrrwtbJ5gf7OYeyRpn+qVS7+wAABHq7K1QrLGE3OlaBmtIpVfgM3uUD5OKlIvm63FZZ1NpD53pN+kOsQuRLrq5MQsYAcA5BRnpE+ZjmDAYS9tUygv8vhYPB7vcvpT61GPzQao3pCiZIlH5gCdvz9ZgdGVyfmAh8WFFz+b617U63RG7KkuRGupW0N5kcfH4EqPqwp2575FAciJWSN8umSA0RWytbhme7JDrqPeLj9cLTaoL4ZxWLYuqEZdzyXiyvlNTswu6mLK9DuRdsnjY5bWbI+96kNmPHVBLDriV3oYdY5diHSlxOb+oOR1Op3KqqM72G/LPNKdfsDqGui3iXLC6ucoRK2yebojzlS3k9U14BEBiM0HXO6u1GvocCjXu/T/yd3Q5PExi71ftcFmd/QMB1paAasDw05nT/b11TnejZ6IyAyiXuewNGCowVTsQiQiIl1iBUZERLrECoyIiHSJAUZERLrEACMiIl1igBFp0HT/DiFXZyi/Q0Oh6QK3jkgbGGBEGmXviyWzYn1vNgk7+i+STdP9O6p/NlWc9hGVGgOMSBeq3MeP7onseyq/MozIDBhgRHrR+EifffCFdIIt7mXc0T+N6f4d1fsiiOyrzpRq6p3y7IIk0g0GGJFuVG26C29OTQNAqLN6311HM92L9si+p0JV7uOxPjvsfbHkcXeV0p+Y2SnW92bTRXsgiXSFAUakK5G3YgCmqx9JJg81prZVfafFnk62rNBT+yJ7jqZ3qnL/lD2QZDAMMCJdsW+pBlBVVQUg1JnqHazeF1my4/TUm8BgU7aXsWkQS1OOSMcYYES6EXphEHdtqgJS2dX0ZmqgYqxv+XkmFw9kTCaVrkUig2CAEelF6IVB7PluY2oxc6kLQOytpRVY1aa7EBn5NSsuMi4GGJEuTPfvaBq09z2Svu6VDafp/h1Ng6mNVZvuSl0lUwYtRva1pQduhDqFi3+PjEhPGGBEGhXZV60aJ1890pKtuNB46Oie9OPVIy2xo3tSudX43T0YbFLGzFe5j8f6kP4pTW/2xdiDSIbC6VSIiEiXWIEREZEuMcCIiEiXGGBERKRLDDAiItIlBhgREekSA4yIiHSJAUZERLrEACMiIl1igBERkS79f87nDWq6SKk7AAAAAElFTkSuQmCC" style="display: block; margin: auto;" /></p>
+<p>As you can see, even small differences in thermal regime can make for
+big differences in developmental phenology.</p>
+<p>We could even combine this plot with the plot we made previously to
+show regime and duration alongside the distributions. For combining
+plots we highly recommend the <a href="https://patchwork.data-imaginist.com/">patchwork package</a>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co"># same plot as before but we&#39;ll filter the years to 2013 and 2014</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>CR_dev.period_1314 <span class="ot">&lt;-</span> CR_dev.period <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2014</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>crooked_river_sy_1314 <span class="ot">&lt;-</span> crooked_river_sy <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2014</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co"># name plot as object p1</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev.period_1314, <span class="fu">aes</span>(</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>    <span class="at">xmin =</span> start, <span class="at">xmax =</span> stop, <span class="co"># draw bars</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>    <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, <span class="at">ymax =</span> <span class="fl">10.5</span> <span class="sc">-</span> index, <span class="co"># use index to vertically place rects</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>    <span class="at">fill =</span> phenology</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> crooked_river_sy_1314, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c), <span class="at">size =</span> <span class="fl">0.25</span>, ) <span class="sc">+</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> crooked_river_sy_1314, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev.period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> <span class="co"># set limits</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span> <span class="co"># change X label to month</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span> <span class="co"># facet wrap here subset plots on developmental year</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;navyblue&quot;</span>, <span class="st">&quot;dodgerblue&quot;</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Emerge&quot;</span>, <span class="st">&quot;Hatch&quot;</span>)) <span class="sc">+</span> <span class="co"># custom colors</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">fill =</span> <span class="st">&quot;Phenology&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Date&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Temperature (C)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co"># name distribution plot as object p2</span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> cust_lims, <span class="fu">aes</span>(<span class="at">x =</span> Date)) <span class="sc">+</span> <span class="co"># we use geom_blank to keep everything on the same limits from our custom lims object</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>  <span class="fu">geom_density_ridges</span>(</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>    <span class="at">data =</span> bull_trout_phenology_cut,</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> Phenology, <span class="at">color =</span> Phenology, <span class="at">fill =</span> Phenology),</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>    <span class="at">jittered_points =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_points_jitter</span>(<span class="at">width =</span> <span class="fl">0.05</span>, <span class="at">height =</span> <span class="dv">0</span>),</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>    <span class="at">point_shape =</span> <span class="st">&quot;|&quot;</span>, <span class="at">point_size =</span> <span class="dv">2</span>, <span class="at">point_alpha =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.7</span></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(cust_lims<span class="sc">$</span>Date) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">1</span>), <span class="fu">max</span>(cust_lims<span class="sc">$</span>Date) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>))) <span class="sc">+</span></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="do">### patchwork plot</span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a></span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="co"># plot the two plots side by side using + operator, you can stack with / operator</span></span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a>p1 <span class="sc">+</span> p2</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>There are many more ways you can plot your data but we these are
+meant to serve as templates and/or guides around common issues related
+to plotting phenology data.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
