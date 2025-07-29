@@ -309,7 +309,7 @@ head(all_data)
 
 # the phenological durations for each prediction set
 development_period <- crooked_predictions |>
-  map_df("dev.period")
+  map_df("dev_period")
 head(development_period)
 
 ## -----------------------------------------------------------------------------
@@ -327,7 +327,7 @@ WI_named_list <- WI_spawn_dates |>
 glimpse(WI_named_list)
 
 # therefore a single element could be accessed with its name and the $ operator
-# if we wanted the dev.period for fish spawning on August 18th we would do the following
+# if we wanted the dev_period for fish spawning on August 18th we would do the following
 
-WI_named_list$`1990-08-18`$dev.period
+WI_named_list$`1990-08-18`$dev_period
 

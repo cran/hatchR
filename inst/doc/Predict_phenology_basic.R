@@ -1,4 +1,4 @@
-## ----include = FALSE----------------------------------------------------------
+## ----setup, include=FALSE-----------------------------------------------------
 # rmd style
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -16,18 +16,18 @@ library(tibble)
 library(ggplot2)
 library(lubridate)
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----packages, eval = FALSE---------------------------------------------------
 # library(hatchR)    # for phenology modeling
 # library(ggplot2)   # for additional plotting options
 # library(lubridate) # for date manipulation
 # library(tibble)    # for tidy tibbles and data manipulation
 # library(dplyr)     # for data manipulation
 
-## -----------------------------------------------------------------------------
+## ----data---------------------------------------------------------------------
 woody_island
 summary(woody_island)
 
-## -----------------------------------------------------------------------------
+## ----plot---------------------------------------------------------------------
 p <- plot_check_temp(
   data = woody_island,
   dates = date,
@@ -35,7 +35,7 @@ p <- plot_check_temp(
   )
 p
 
-## -----------------------------------------------------------------------------
+## ----plot-rect----------------------------------------------------------------
 p +
   geom_rect(
     aes(
@@ -48,7 +48,7 @@ p +
     alpha = 0.01
   )
 
-## -----------------------------------------------------------------------------
+## ----mod-select---------------------------------------------------------------
 sockeye_hatch_mod <- model_select(
   author = "Beacham and Murray 1990",
   species = "sockeye",
@@ -63,11 +63,11 @@ sockeye_emerge_mod <- model_select(
   development_type = "emerge"
 )
 
-## -----------------------------------------------------------------------------
+## ----print--------------------------------------------------------------------
 sockeye_hatch_mod
 sockeye_emerge_mod
 
-## ----warning=TRUE-------------------------------------------------------------
+## ----pred-hatch, warning=TRUE-------------------------------------------------
 WI_hatch <- predict_phenology(
   data = woody_island,
   dates = date,
@@ -76,11 +76,11 @@ WI_hatch <- predict_phenology(
   model = sockeye_hatch_mod
 )
 
-## -----------------------------------------------------------------------------
+## ----print-hatch--------------------------------------------------------------
 WI_hatch$days_to_develop
-WI_hatch$dev.period
+WI_hatch$dev_period
 
-## ----warning=TRUE-------------------------------------------------------------
+## ----pred-eme, warning=TRUE---------------------------------------------------
 WI_emerge <- predict_phenology(
   data = woody_island,
   dates = date,
@@ -90,15 +90,15 @@ WI_emerge <- predict_phenology(
 )
 
 WI_emerge$days_to_develop
-WI_emerge$dev.period
+WI_emerge$dev_period
 
-## -----------------------------------------------------------------------------
+## ----output-------------------------------------------------------------------
 summary(WI_hatch)
 
-## -----------------------------------------------------------------------------
+## ----plot-pheno---------------------------------------------------------------
 plot_phenology(WI_hatch)
 
-## ----eval=FALSE---------------------------------------------------------------
+## ----other-plots, eval=FALSE--------------------------------------------------
 #  # shows a plot with just the ef cumulative sum values
 # plot_phenology(WI_hatch, style = "ef_cumsum")
 # # shows a plot with just the ef daily values
@@ -106,7 +106,7 @@ plot_phenology(WI_hatch)
 # # turns off the labeling for a cleaner figure
 # plot_phenology(WI_hatch, labels = FALSE)
 
-## -----------------------------------------------------------------------------
+## ----temp-example-------------------------------------------------------------
 # vector of temps from -5 to 15 by 0.5
 x <- seq(from = -5, to = 15, by = 0.5)
 x

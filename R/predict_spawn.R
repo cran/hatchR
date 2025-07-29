@@ -1,13 +1,15 @@
-#' Predict phenology of fish
+#' Predict spawning of fish
 #'
 #' @description
-#' Predict the phenology of fish using the effective value framework.
+#' Predict the spawning of fish using the backwards calculation of the
+#' effective value framework.
 #'
 #' @param data Data frame with dates and temperature.
 #' @param dates Date of temperature measurements.
 #' @param temperature Temperature measurements.
-#' @param spawn.date Date of spawning, given as a character string
-#' (e.g., "1990-08-18"). Must be year-month-day in format shown.
+#' @param develop.date Date of development (e.g., hatch or emergence), given as
+#' a character string (e.g., "1990-08-18"). Must be year-month-day in format
+#' shown.
 #' @param model A data.frame with a column named "expression" or a character vector
 #' giving model specifications. Can be obtained using `model_select()`
 #' or using you own data to obtain a model expression (see `fit_model`).
@@ -18,7 +20,7 @@
 #'    days to hatch or emerge.
 #' * `ef_table`: An n x 4 tibble (n = number of days to hatch or emerge) with
 #'    the dates, temperature, effective values, and cumulative sum of the
-#'    effective values.
+#'    effective values. Presented in descending order from devlop.date backward.
 #' * `dev_period`: a 1x2 dataframe with the dates corresponding to when your
 #'    fish's parent spawned (input with `predict_phenology(spawn.date = ...)`)
 #'    and the date when the fish is predicted to hatch or emerge.
@@ -28,21 +30,19 @@
 #'
 #' @examples
 #' library(hatchR)
-#' # get model parameterization
-#' sockeye_hatch_mod <- model_select(
-#'   author = "Beacham and Murray 1990",
-#'   species = "sockeye",
-#'   model_id = 2,
-#'   development_type = "hatch"
+#' # get emergence mod for bull trout
+#' bull_trout_emerge_mod <- model_select(author = "Austin et al. 2019",
+#'                                       species = "bull trout",
+#'                                       model = "MM",
+#'                                       development_type = "emerge"
 #' )
 #'
-#' # predict phenology
-#' sockeye_hatch <- predict_phenology(
-#'   data = woody_island,
-#'   dates = date,
-#'   temperature = temp_c,
-#'   spawn.date = "1990-08-18",
-#'   model = sockeye_hatch_mod
+#' # predict spawn date using emergence date
+#' predict_spawn(data = crooked_river,
+#'               dates = date,
+#'               temperature = temp_c,
+#'               develop.date = "2015-03-21",
+#'               model = bull_trout_emerge_mod
 #' )
 #' @references
 #' Sparks, M.M., Falke, J.A., Quinn, T.A., Adkinson, M.D.,
@@ -51,12 +51,20 @@
 #' Alaska sockeye salmon.
 #'   \emph{Canadian Journal of Fisheries and Aquatic Sciences},
 #'   \bold{76(1)}, 123--135.
-predict_phenology <- function(data, dates, temperature, spawn.date, model) {
+
+
+predict_spawn <- function(data, dates, temperature, develop.date, model) {
   # assign data and arrange data by dates
   dat <- data |>
     dplyr::arrange({{ dates }}) |>
     tibble::rownames_to_column(var = "index") |>
     dplyr::mutate(index = as.numeric(.data$index))
+
+  ### for testing above
+  # dat <- data |>
+  #   dplyr::arrange(date) |>
+  #   tibble::rownames_to_column(var = "index") |>
+  #   dplyr::mutate(index = as.numeric(.data$index))
 
   # check if dates are a character vector
   check_dates <- dat |> dplyr::pull({{ dates }})
@@ -67,22 +75,30 @@ predict_phenology <- function(data, dates, temperature, spawn.date, model) {
     ))
   }
 
-  # check if spawn.date is formatted as a date
-  if (lubridate::is.timepoint(spawn.date) == TRUE ||
-    lubridate::is.Date(spawn.date) == TRUE) {
+  # check if develop.date is formatted as a date
+  if (lubridate::is.timepoint(develop.date) == TRUE ||
+      lubridate::is.Date(develop.date) == TRUE) {
     cli::cli_abort(
-      "Your spawn.date is formatted as a Date but needs to be formatted as a character string (e.g. '09-15-2000')"
+      "Your develop.date is formatted as a Date but needs to be formatted as a character string (e.g. '09-15-2000')"
     )
   }
 
   # get spawn date
-  s.d <- lubridate::ymd(spawn.date)
+  d.d <- lubridate::ymd(develop.date)
 
   # subset data to spawning period (after spawn date)
-  spawn.index <- dat |>
-    dplyr::filter({{ dates }} == s.d) |>
+ develop.index <- dat |>
+    dplyr::filter({{ dates }} <= d.d) |>
     dplyr::pull("index")
-  dat_spawn <- dat[spawn.index:c(nrow(dat)), ]
+  dat_develop <- dat[develop.index, ]
+  dat_develop <- purrr::map_df(dat_develop, rev) # reverse order of dataframe to walk over it backwards
+
+  ### for testing above
+  # develop.index <- dat |>
+  #   dplyr::filter(date <= d.d) |>
+  #   dplyr::pull("index")
+  # dat_develop <- dat[develop.index, ]
+  # dat_develop <- purrr::map_df(dat_develop, rev) # reverse order of dataframe to walk over it backwards
 
   # model prep
   # bring in model df and extract the expression
@@ -102,22 +118,23 @@ predict_phenology <- function(data, dates, temperature, spawn.date, model) {
   Ef <- parse(text = mod.exp)
 
   # Vector of temps for Ef to evaluate
-  x <- dat_spawn |> dplyr::pull({{ temperature }})
+  x <- dat_develop |> dplyr::pull({{ temperature }})
 
   # Vector of effective values (will catch NaNs)
   Ef.vals <- suppressWarnings(eval(Ef))
 
-  # Vector of cumsum of effective values
-  Ef.cumsum <- suppressWarnings(cumsum(eval(Ef)))
+  # Vector of cumsum of effective values, multiplied by -1 and added 1
+  # for backwards cumsum to 0
+  Ef.cumsum <- suppressWarnings(cumsum(-eval(Ef)))+1
 
   # Walk along temps and sum Ef to 1 and count how many days it takes
   #     If fish doesn't hatch value returns Inf
-  Ef.days <- suppressWarnings(min(which(Ef.cumsum >= 1)))
+  Ef.days <- suppressWarnings(min(which(Ef.cumsum <= 0)))
 
   # Table of outs
   dat_out <- tibble::tibble(
-    index = dat_spawn$index,
-    dates = dat_spawn$date,
+    index = dat_develop$index,
+    dates = dat_develop$date,
     temperature = x,
     ef_vals = Ef.vals,
     ef_cumsum = Ef.cumsum

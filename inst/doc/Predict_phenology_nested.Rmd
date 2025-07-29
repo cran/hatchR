@@ -162,35 +162,37 @@ We can do a last data check to make sure we have continuous data.
 
 First we'll use a smaller example to show how it works and then expand to our full dataset.
 
-```{r}
-# Pull data from one sits
+```{r, warning=TRUE, message=TRUE}
+# Pull data from one site
 PIBO_1345_summ <- isaak_summ_bt |>
   filter(site == "PIBO_1345") |>
   unnest(cols = "summ_obj")
 
-# We create a column that either contains NA, TRUE, or FALSE
-#   NA is for first data
-#   TRUE is if the difference between one row and the row preceding it is 1
-#   FALSE is the difference is not 1
-PIBO_1345_summ |>
-  mutate(diff = c(NA, diff(date)) == 1) |>
-  filter(diff == FALSE) # since the output is empty there are no FALSE in diff
+# We can then use the hatchR function to check that our data are continuous
+# We see from the message they are!
+check_continuous(data = PIBO_1345_summ, dates = date)
 
-# We can do the same to our isaak_summ_bt dataset
-#   only difference here is we are mapping with an anonymous function hence the
-#   ~{..., .x$date...} syntax. 
-#   ~{} tells us it's an anonymous function while the .x allows to us to 
-#   call the column from whatever data is piped in
-isaak_summ_bt |>
-  mutate(diff = map(
-    summ_obj, ~ {
-      c(NA, diff(.x$date) == 1) 
-      }
-    )
-    ) |>
-  unnest(cols = c(summ_obj, diff)) |>
-  filter(diff == FALSE) 
-# all continuous!
+# To demonstrate an example of our data not being continuous, we remove the 100th row
+check_continuous(data = PIBO_1345_summ[-100,], dates = date)
+
+```
+
+Next we can `map()` our `check_continuous()` across our nested data set.
+
+```{r, warning=TRUE, message=TRUE}
+
+# Map check_continuous() across isaak_summ_bt
+# We'll only do the first 5 nested objects so the output doesn't get too long
+
+isaak_summ_bt[1:5,] |> # run on first five nested dataframes for convenience
+                       # remove [1:5,] to run on all nested objects 
+  mutate(diff = map( # mutate a dummy diff column to run map
+    summ_obj, # nested data object (akin to "data =" argument in normal function)
+    check_continuous, # function name, no parentheses
+    dates = date # specify dates argument with column name of dates in summ_obj
+  )
+  )
+
 ```
 
 ## Mapping Across Nested Data
@@ -234,7 +236,7 @@ hatch_res <- isaak_summ_bt |>
       model = bt_hatch,
       dates = date
       ) |> 
-      map_df("dev.period") |>
+      map_df("dev_period") |>
       list()
     ) |> 
   select(site, dev_period) |> # just select the columns we want
@@ -246,7 +248,7 @@ hatch_res
 
 > It's not output here, but this will output a boatload of warnings that some fish aren't hatching. However, it's pretty safe to assume that some of these habitats are actually too cold for bull trout and those are the places where they won't have hatched. If we were trying to make management decisions about these fish or testing a some kind of hypothesis it would be worth following up with why those fish weren't hatching, but for now, we'll rest on the assumption it's just too cold.
 
-A couple notes about what we did above. First we use `purrr::map2()` instead of `purrr::pmap()` but they are interchangeable here as long as you set up your variable grid for `purrr::pmap()`. Secondly, we're actually piping the output of the `purrr::map2()` into `purrr::map_df()` function so we can just pull out the `dev.period` list element out of the `predict_phenology()` output. Otherwise we'd end up with a list of the 4 outputs from `predict_phenology()`, which would end up being a pretty big object in your memory. So better just to store the 1x2 vector that is `dev.period`. Lastly, the `purrr::map_df()` is piped into a list because the nested dataframe doesn't know how to hold onto multiple dimension object (the 1x2 vector), it just wants a singular list containing all the elements.
+A couple notes about what we did above. First we use `purrr::map2()` instead of `purrr::pmap()` but they are interchangeable here as long as you set up your variable grid for `purrr::pmap()`. Secondly, we're actually piping the output of the `purrr::map2()` into `purrr::map_df()` function so we can just pull out the `dev_period` list element out of the `predict_phenology()` output. Otherwise we'd end up with a list of the 4 outputs from `predict_phenology()`, which would end up being a pretty big object in your memory. So better just to store the 1x2 vector that is `dev_period`. Lastly, the `purrr::map_df()` is piped into a list because the nested dataframe doesn't know how to hold onto multiple dimension object (the 1x2 vector), it just wants a singular list containing all the elements.
 
 With that in mind we can plot our data.
 

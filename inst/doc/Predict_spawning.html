@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Predict spawning</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Predict spawning</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p><strong>hatchR</strong> has a built in
+function—<code>predict_spawn()</code>—which allows users to predict when
+a fish’s parent spawned based on the observation of either when a fish
+hatched or emerged. The function works almost exactly the same as
+<code>predict_phenology()</code> but walks backwards from the point of
+development (hatch or emerge) and outputs spawn date.</p>
+</div>
+<div id="workflow" class="section level1">
+<h1>Workflow</h1>
+<p><code>predict_spawn()</code> works in essentially the same fashion as
+you learned about for <code>predict_phenology()</code> in the <a href="https://bmait101.github.io/hatchR/articles/Predict_phenology_basic.html">Predict
+fish phenology: basic</a> vignette. First you have to select a
+developmental model. This will be determined by what life history stage
+from which you have empirical phenology data. For example, maybe you
+snorkeled a stream and observed bull trout emerging from a redd.</p>
+<div id="model-selection" class="section level2">
+<h2>Model selection</h2>
+<p>Because our empirical data are from observing juvenile bull trout
+emergence we will use the bull trout emergence model using
+<code>model_select()</code> and our <code>model_table</code>. However,
+if you have custom models those could be used in the same fashion.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#select bull trout emergence model</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>bt_emerge_mod <span class="ot">&lt;-</span> <span class="fu">model_select</span>(<span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>                                      <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>                                      <span class="at">model =</span> <span class="st">&quot;MM&quot;</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>                                      <span class="at">development_type =</span> <span class="st">&quot;emerge&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>                              )</span></code></pre></div>
+</div>
+<div id="predict-spawning" class="section level2">
+<h2>Predict spawning</h2>
+<p>We’ll use our <code>crooked_river</code> data set, which is
+temperature data from a reach of spawning bull trout. With model in hand
+we’ll predict spawn timing assuming we observed fish emerging March 21,
+2015.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#predict spawn timing using &quot;2015-03-21&quot; emergence date</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>bt_spawn <span class="ot">&lt;-</span> <span class="fu">predict_spawn</span>(<span class="at">data =</span> crooked_river,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>              <span class="at">dates =</span> date,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>              <span class="at">temperature =</span> temp_c,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>              <span class="at">develop.date =</span> <span class="st">&quot;2015-03-21&quot;</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>              <span class="at">model =</span> bt_emerge_mod</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>              )</span></code></pre></div>
+<p>The outputted object has the exact same structure as a
+<code>predict_phenology()</code> output. They include the slots:</p>
+<ul>
+<li><p><code>days_to_develop</code>: days from hatch or emergence to
+spawn</p></li>
+<li><p><code>dev_period</code>: a 1x2 dataframe where
+<code>start</code>= predicted spawn time and <code>stop</code>=empirical
+developmental event used for prediction in the model.</p></li>
+<li><p><code>ef_table</code>: a n x 5 tibble where n is the number of
+days from spawn to development. <em>Note that the table is ordered from
+the development date and moves backwards in time.</em> The columns
+are:</p>
+<ul>
+<li><p><code>index</code>: the row number in the temperature data
+set</p></li>
+<li><p><code>dates</code>: dates imported from your temperature
+data</p></li>
+<li><p><code>temperature</code>: daily average temperature imported from
+your temperature data</p></li>
+<li><p><code>ef_vals</code>: every day’s individual effective
+value</p></li>
+<li><p><code>ef_cumsum</code>: the cumulative sum of effective values
+moving backwards from 1, a fish hatches when <code>ef_cumsum</code>
+&lt;= 0.</p></li>
+</ul></li>
+<li><p><code>model_specs</code>: model specifications imported from the
+developmental model provided to
+<code>predict_phenology()</code></p></li>
+</ul>
+<p>A summary of the above output for <code>bt_spawn</code> is presented
+below.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">str</span>(bt_spawn)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; List of 4</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;  $ days_to_develop: int 188</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt;  $ dev_period     :&#39;data.frame&#39;: 1 obs. of  2 variables:</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   ..$ start: POSIXct[1:1], format: &quot;2014-09-15&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   ..$ stop : POSIXct[1:1], format: &quot;2015-03-21&quot;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;  $ ef_table       : tibble [188 × 5] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   ..$ index      : num [1:188] 1572 1571 1570 1569 1568 ...</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   ..$ dates      : POSIXct[1:188], format: &quot;2015-03-21&quot; &quot;2015-03-20&quot; ...</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   ..$ temperature: num [1:188] 2.25 1.97 1.78 2 2.02 2.06 1.97 1.93 1.64 1.79 ...</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_vals    : num [1:188] 0.00496 0.00479 0.00467 0.00481 0.00482 ...</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;   ..$ ef_cumsum  : num [1:188] 0.995 0.99 0.986 0.981 0.976 ...</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;  $ model_specs    : spc_tbl_ [1 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;   ..$ author          : chr &quot;Austin et al. 2019&quot;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;   ..$ species         : chr &quot;bull trout&quot;</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;   ..$ model_id        : chr &quot;MM&quot;</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;   ..$ development_type: chr &quot;emerge&quot;</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;   ..$ expression      : chr &quot;1/exp(5.590 - (x  * 0.126))&quot;</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;spec&quot;)=</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;   .. .. cols(</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;   .. ..   author = col_character(),</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;   .. ..   species = col_character(),</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;   .. ..   model_id = col_character(),</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;   .. ..   development_type = col_character(),</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;   .. ..   expression = col_character()</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;   .. .. )</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</span></span></code></pre></div>
+<p>So we see, the fish took 188 days to emerge with a predicted spawning
+date of September 15, 2014.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># development time</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>bt_spawn<span class="sc">$</span>days_to_develop</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; [1] 188</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># spawning date</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>bt_spawn<span class="sc">$</span>dev_period<span class="sc">$</span>start</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2014-09-15 UTC&quot;</span></span></code></pre></div>
+<p>Finally, because the model output is in essentially the same format
+as that from <code>predict_phenology()</code> it can be plotted using
+<code>plot_phenology()</code> .</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">plot_phenology</span>(bt_spawn)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAEgCAMAAABrWDzDAAACalBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZmYAZrYAcrIAcsAAcs0Ai9oAnnMAnowAnqQApOYAsLwAwNMzMzM6AAA6ADo6AGY6OgA6Ojo6OmY6OpA6ZmY6ZpA6ZrY6crI6csA6cs06kLY6kNs6nnM6now6nqQ6u/I60OlNTU1NTW5NTY5Nbo5NbqtNjshmAABmADpmAGZmOgBmOmZmZmZmcrJmcsBmkJBmkNtmnnNmnoxmtpBmtrZmtttmtv9m0Lxm0uZm0v9m4NNm4P9uTU1uTW5uTY5ubo5ubqtujqtujshuq+SOTU2OTW6OTY6Obk2Obm6ObquOjm6Ojo6OjsiOyP+QOgCQOjqQOmaQZgCQZjqQZmaQZraQi7KQkGaQkLaQsHOQtpCQttuQu8CQu82Q0tqQ27aQ2/+Q4LyQ6eaQ6f+Q79OQ7/+rbk2rbm6rbo6rjk2rjqurq46ryKur5Mir5OSr5P+2ZgC2Zjq2Zma2kDq2pLK2tpC2ttu2wHO225C229u22/+26f+2/9O2/9u2/+m2///Ijk3Ijm7IyI7I5KvI/+TI///bkDrbtmbbtpDbu8Db0Izb27bb29vb/7bb/9vb/+nb///kq27kq47k5Kvk/8jk/+Tk///mnwDmnzrmn2bmsJDmwbbqnwDqnzrqn2bq0NvunwDunzru4Lbu4P/ysADy4JDy8Lby8Nvy8P/3wQD38P/3///70Dr7/9v7////tmb/yI7/0s3/25D/27b/29v/4Gb/4KT/5Kv/6dr/6eb/6fL/77z/7+n/8JD/8Lb/8Nv//7b//8j//9P//9v//+T//+b//+n///L////upIowAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAgAElEQVR4nO2djZ8kR1nHZ5OcO5FLSNicKCTCBsglJodRlKCsoiFEL4KIu4pKDIicRgIoeiOgJ0HcRcxATqJ7KtkAwYAGDRKZzYZko2d0L3uE/p+sp95fu6u6quf1+X2Sm57uquqaru8+z1PV1dW9CoXKUG/SFUDNthAgVJYQIFSWECBUlhAgVJYQIFSWECBUlhAgVJaSABos04+9W3u9y+43t6QON5YjStr7sU3/gcbshxtHtiNOgBqTUgAa9mjj7q30iJZO6VtKcQANL0GA5kPxAB3+aY8BNOi9uTr8eG9V39KSIUALpWiADk4s/dQJBhC04AFsqy2mz630LvskJeBzP0As0xuratRbo3lXq8PfIHvezNIdbhDDRbB72vSAKjsc+MH7BWf0DGIXA0jkJCWPSC7DBqLGqXiAfmubozIkdof8s6pvVewA0WW3LvOtHoGHZRktnaLM9ChOEqCR6QFVduka91YgA1Aod1GAZM6DE69YcbwoaoxKiYE4QODLer1rjS12eOl91dMbxM8dblxyP2AARgpsCLFUeyvXbrM9VGBaCEaUP+6S9Oxgqj6/sszNDSnD3KVyHpzoLW8TLxrjNlFdqAVA4D56PeFIegIAgsdqVQlIvvBnv7kCzTqiZmiV7L70Jz+pigKAeMoBNx8qO9uiaYbUyui7ACCV8+AEPfsgFFKhulY6QMQYvA/ilWVti4rFOzQKZg4HAII8I0BkADteKQIeBhB1aCMOkMo+Yg6Q+bBVekDtYgCJnMKrog+blNIB4saA/NGrLXpYEUAcyyt++88fosnJURprV58HcyUsRSxAgAuUjwBNq1oDRNpMbdHD7CtzOGuVcGaj3k+fEFH2376bR9FhF6ay84RLHzhBTZrY5XNhJOZCFzYhpQNEg13iuCCCFVv8MAl0DyEKJg28DQESa9yXAyGj3qu3q8OPC0sxpNbFDqJ5duYan6ZU7K38OECndjlB9KsxiJ6kWgTRI9FH17YqeQD64bzPztAYUr/Fd4mAe+jpxsvsolywSCQftS5yl92Nv3RF84yosasFQDSaYWN3akscuOzTG3zU77L3seCI+xs6kHitGEQ+uJV0v+1baTI7PXApG3Xk90/kLtaz35MDicsEpleat+NQY1T3d+NHvbXmRG2lDYOjJqLOAXr61i7vXSFAk1bHAJEg17zXWrx8BGiy6hggEgNf25yqvRCgSQtnJKKyhAChsoQAobKEAKGyhAChsoQAobKEAKGyhAChshQLkLjBvrZ3jbx5qm221ki7kQ7D1vTrQNy2P3j9KedU/KA1xs1S0pmQ2q2TYW/pvTX1HQXv4jf9tJhqm5XhB+E6rjo51Q+dOcUD5N6RKAyQfFJoCDN+jMlmhxvq2Q12kE0LUnViKUfmfbeDE8Z93G4AClbbqIw4OFimU8TNnOqHzp6mCCA6t5WUSZsd9pM/UH5dh5eKU4mDNLHMLFIOzRsbVgW7AShYbb0y4iAtd8jJEjm1Hzp7SgYIfjA1zmtk8241nUzfR2fswPdVmo1O6Bgs713z3pUem17ILDdct7thjqHGJimeXmS44qNl3o57x/7iGt2XkYO0BWUzi5SDVb2yUIXlUH35yXllWA760AetG+SCTZhNK35RarUH5nFlEIe6aYIj8ofOoNoARH/t3sraHkxm5Q8pq31waZfZxSLH4GINXg4TCWVyasqHMB11lSSzjACx6CPWSmuiVJpXosIPMgukphrxFnq5MTuRwuOvrzi5qAzUk/xG8ZVkYY4S5ueyVKnVNiqjHbQcK3NhiwAQn1IKDXKMXRY6010aCXPfd/hlIfsPf+1u0iLHNsUhyQB8Wg/Jw1xpfny1EoUTX2ADtArxA6mTCRCdly9qUimAPPUVJxeV4Um1r3QTvE7LahuVUQdJpY3YiPmuRQBIc2EDtswCu078p+v7mMfnT+Gs7f3QQz+6yf6q6XH+3PMqteRac1fQa1oz/lpZlmObDkBr1JF4e1jaHzinwldfcXJRGfh9YIj4VwCGplCuKbXaRmV0C6QHUEP+J7BgANE4gEeE+sUS+8iVOjixxBtvebR8uPHmjVXZfiIEcFuC9UW0eIHFnHwAYchbVrUEp1HZKlYNByBPfSVAwhyMjvwdY0jkdABKrLaojFttsVPrfC0cQNLsGz8d9lGDf2yTXn4IVEZH3r1WDb/v9ackQPJJQu4jZHYZnoi/Z1W43PB2Z0QC9neuhlQUQE59xclFZUi29xIoxFdRTenCjm2mVtuojOw86pZIc4SLBZDoATkNAvt4yDmizyXTB2+AIvD7Ijl7MIc9VapHo/IiDuSAiguQOMjCWxWN0gTEXxrDL3pgY9VXnFxUBnzwMn/mg3z1BtFp1TYrI6ut7dSoWSyAeHhjxkBy390s4CBxx9IH4E8Nuhk0fJTJISBfOuX0h+WaMCJm8QIkDsIortabkZ6qx7pTcmeovno3no378UerZVK9G7+sDkVXm1fGrDYUoj0cJx6rm3+AYjUdV2LvjQXLmopfNLWaT4BGBZ8EmY5fNLWaT4A+VvBR5+n4RVMrnM6BylIkQN97T5/ppS3O8V+fakzy5M7OziNPNCR6/qsqxf/+h/FV6fDxHaovfUts/WtDUZZevOco6Gpt1/nXfJD856Y5euWm2Pp5T0lmHiO7lvyFN9FUZ44evWpbfvKdM6AEC/TcD9/b6hTN+Q4f//K3ASJfU2vSWj0MwOHjjzlbtUXZevGeG+i/VxkzQ2yAbnC2XAUBOqvTeeYKSHX2qu0X77lafT5rnn56NRUAfRP4IQSxj6DGCVD1wm2GUSkJkG5eXrjtKABEz/bslZvi0zRS06x0gMCbff8m+fa71/X7r3uO/PMW8uX9/f5LttXBV/0O+YBjLMXraF7yDzvAU4mRlIOvSdNDG5b88/xXv/Hozs5jzz8KHkjtfKKCPWz/Y89/9d8pIk8yb/Wlb9ES/AAdipQsvyiNFs0zi9oIJMBMnL+eeKcbuAs7c3UljIcfILZ99spNIxsDCVzdlTy0J1amOkuweeG2G6pnr5ZJgCLxOTsmKBmg772HhEEPvmT7uesIMA8CNQ8CKkDFS7WD5PO7b3hLRQ+SfBIgOCBSiYJtywKt+yixRk/uwD+k0RVAlDW+i/wPNouwcfj4V6T9ClggnlLLL0rVM4MEEqQFaUsCEJQEzTAELBCQQXaY2Sgdwj2pLARHSiRjB8oGcMRnjf+bMiUD9BQxHcDGc9cRPNg/wAX7NA7+9zbLZAL0FlWEKPj5f/6W3JQAkYZm/6imJv/937crZYzkxzNgfbgdE6HzY2LrMVmwmV+UqmcGSYCu3Pwf+AUMA/IftOv5126yNCx0vkFssSzQ6OR/MxvdVGCIj/Ov+T1Wlg7QDeLTcaFTq2SAHmS9MemUJCOAhHGQkEK2LzcBgk+RShTss0DCv1gAVdUztL/GeQAjQ4zHkzsKlYAF4im1/KJUPTNIs0DkHwLHFYIE4r54+BuwQPDlrJMNEDl7VHHG0TjLe24BC1QXXE2T0gHirscPkH7wu2+4/F7HAlGAXmK6d/Hnf/D1J5oAOvjaI7rpqZ758n8KMrhCQTRLqeWXAFmhu2g54mBeuO2KD2qm5Pxr/4qHtqEg+tmr/p58t7JRgLSIhgN0ho8UBGKguQXoqcvvVd8Mz/TcqzaNg08BJ095LJBIJcXb0Ax3vAA9Q42ItECEuW8Q//eMNoQUAoinVPmlC7PGn7ReGDNC0pS8eM/PMK8TBOiFN4FfsrJRF3aF3vECgJ698i8ZSFrcrPXC5teFfe89hAuOhQaQCKK1g8DJc9ddfi9EO999w+vIQX5ApJIlq3Ggg69B7PKICZC2E1r7+UcfocE0PfzNna/w/ByEYDeephT5tVL1zCBtHAia/fz1ioSzYngx2I2nZkXLBuHMi/dc8UFZHE3EQxwKCo+Wz/DxH/E5v0E07alffq/twt7PBqn1g9UnyPbvE3o+QQ5BZ/5nf+JeASFNpT3X8E0xEg3d7H/5ugmQvpMkfOTfCD0EBx4SgfuDeJkjIILoR56wAGIpeX6tVJFZdeNVuHKGhDJ/QB0LMyXXc6sggmggwwDoWRrYqGx0IODn3sS68cIKgYU6QztsGiln+OC3+Dw7f934GrUcYyw56yJfzbXhfbBcxdynmMeBxBq1BKjkrIt8NdfmbKG41riV4desjCNOFqCSsy7y1VSb89eXatRm8zKXN1NRKFcIECpLCBAqSwgQKksIECpLCBAqS7EAIWjzrdbtiwChQAgQKksIECpLCBAqSwgQKkuqfffveIB+Xrjr+M0Py4+IjLEnaFa/n5AYNRWS7bt7/CYK0MX71qtzt4iPiIyu9m/nZTWkswUT5uNTo8arnR3vbtG+Wzd+lFmgC29/AIwR/wiXFwbjwi+drs5J6xUPUB8Bml7RyZq+Ay8jYlscl/07HwYE+Ee4xDAYNOvbH2hMZ6mPAE2ndqR8R50YaPdmSg7/CBcbY4GATgRotrVTz48LUDsLNITVdMUSfkb8HQUQBYf8gwBNl3aa8PEA1CoGGhx56MQaX2m02n/r6Wr3phQX1hfWB03Q9Ggngp7KA9DF+06yXtjJ+F4YXR98TayBbHq/AECGuZEAoQmaEsXBAzIBgv9bjAOZAMVYoL4Z8SBAU6VoeqpSI9FDcGHyfWi7x4/feNqbTqpvEiTtEfqwCYsgk4JPsVsZo17PeJFk4wkoMgIXyxa1rRIqV2nsUE3qXhgPmR2zg335CSnZ9HAVAYi+yCHtBDzi4f96wmnUOKWzk4JPIYCsd9TGnEDYnsoLEBI0PrU1PVxxANF3h5qvd7WC6OCzu80AGV0vHhtF1QqVK3OspwU+cQAdbtD+OX3ZtDcjvF4G5HuXcQNAfU/HCwEai3ZMfFoqBiBhX4zXDRcIoqvQDTAEqGsVMD1cERwobnRPhQDNrMqYHq4IDlSIrL+vsZQL8/kr9GGdqSQ7VEUA4ule73u9UWgkmn/4UUGAOlFR08MV44kGy/aGP+PI1xerBShECgJUXB2wQxUDkOh+DfWOvA+geBfWQAgCVFZdmB6uqFiYvnfY4sOTcZBugQLCIKicumOHqtBINI2hl5JjoKAQoDLq0PRwTehmKgLUvTpnhyqGA3ojw+6ke+6FlYyBkKA8dW96uKIGEpc9exGgKdZ42KFKGgfyZxz2hJpAk2rkAwFqq8yb68mKskD1AKVP54gwMAhQK42VHaqoGOhY/C2KqHQIUDcaPz6RLsx3p8vI6A2za07QjAcClCadnTHiU2xK6yrxc02xUpIQoBRNwvRwFZvSOlhNuRfWLCQoVmPqrwdUxIUBQMPllG58sxCgGI1rtCes6Pa1J2uYz8ZTerwzoxGgzjRxeEDx7Ws5KCMjTFocpNwLaxQOJdZr8qaHKwGgml5YkRMYQoBqNLb7FBGKb99h2AK1eLCwUQiQX1PEDlV8EL0UjoFaPFjYLATI1TSZHq74INqCJPPBwmYhQKamjx0q0b5yOaBzx0Hr9PMmfYWymiDa6uhfvK9xeZcIIUCaptD0cPH2NZeFhjXGttatlPFBNMm622KZX0sIENfUskPF29dYEhHWp7v4IXuBzUFNN96QWuK3Pl2DDIAWtlM2vaaHi68TbSzKCqaIuDRwZKDmINpcpXX/zo9wF5a0zK8te9GgxSNo2tmh4u2rL4xJP2GhQ9cKuRmZzFVab1+nQHrSpWjB13yZetPDxdtXt0AqfnHiIDcjlbXI5p0Rq7Q2a4EBmhF2qDwx0NZJcZADFDOpXgPowjsLAyQepG9b0mxpVkwPl+yFyWWhmeMCM3Txw5So5kn11iqtW4VdmL4SQ9vSZkOzxQ6VOQ5E14lmxuOcXKs3ZqKYsUorKavV654saYsA1y3lMTeaMdPDVWRSfeYJAtJXkWYf8wzQDLJDNZFJ9XGyAZpbHzbuJ3GKqsykevZsmPeOakGAqrkcnp5ddqgKveoA4JJBdJkT6IbH2Cc9WuuSp0UzbXq4Sq4TXXROtB766PvUa1lmnSCdnVnFJ8mFmV5sXABZoMwHQPNgerjKuLAR3CjrxoWFAJrhKYvzYXq4Si4w5X04tYALM/YFAJoRmubI9HBFrg+07Ew67Lwbr0Cxd3pM02w4tLkyPVxxC43DWOLAvKExLoAsMlQ3bLYAmj/TwxW5PhA8uFxwcYUo9TVzYx9wxqWnG6B5ND1ckbcy3AeXzcd6fLdbo08QVOjmRT1A04XS3Joerpj2JeiMjmzXPBfWyWM9VRNAlReg6brfMcemh6vIc2FdPFhIFXyVRl8fk660GGh67rjOu+nhKjQO5It+Mk/A5DdA0w/Q/JserjLPxncSRIelRqP1PWJr0kHQgpgerpj2HchhQs1TWSuUZZ0gWVMM0MKYHq74ZX7BAn3Bn7GrIDooAyDRJxOHJgfQzs4CmR6uNIACGTsLooPSABLPbKh795MBaNFMD1eZINo7ZzHzBHXqOwDp5mj8BC2i6eFKmpFY8JWXeTLuk00aoJ0FxqeUBeriBLXS7tQbFsgOrruHaYHZoZrWJe7ixIajFUBO76zru6yLjk90+8JAT93deH1xhVYnaKe+dsN13AAhO1Qx7QshjnO3NLy4QvoJWksfd9bR6f42PeLDFRVER7wvTHs2PvkE7aX32f0AdWKBFjlothU5I7HeAk0QIGsWhw1Q+WGhhe5yeRTZviPt0XdPRnNxhTYnaCWTH+32qj63o2RHDOFxlLBOdF0vzFhcoeUJ0uUApN2S13cWIgjp8WhGx4G4zAEfFyDrPll7LdYd9hQ5y/yK9X3VjvqMIOduGSz66knXrbRwx+6aZQKE7ITlLvPLliUz1v31LZ1QC9C545MFSDNF2rc2QtPTIGeJO76ypr7m3RDugn16IxREu29t3n/bO6YFIP0jXTo7iI9XzjK/fH1fbaVM3kOvuZVhzQe6+KE/YS4sa5nfZDl9+qqfBxCangg5y/zy9X21dX+bAbJ07uREYiDn0Z5+e4DQ9MTKs8xvBXGQvmNwZBtcWOyTqSTrjAOEpidevlcdAED6jsON1ZEzyhMGg72u5WRjuuLyuDD9W+X54hEOFibJWeaXr++rrftbm9GvCXXjYwCqHRXC+xTJcpf55ev7powDOZpJgBCeNiq0PpD3fbt5J0iXMYlD32G5MA9AaHraqtCtjEGvF3hp4RgB0mQNIOp3512AdhCf9ip2LwxmnY37bnyNzJmJ2j0ya3oHspOpgjdTASF3RtAUAdS3AULTk68iq7SChvROxsBxZBMEyDMwzXeT/5CdMop9MpX+E3ourDrc4Ddb3UmJUwSQ4ghNTzEVAejgRGfLu7RVHUDITkGVsUB5J+hCYYAQn6LKB6hukei4E3ShQAwk2Rnrw8/zrEWyQBo+nT6uulBaCIBY70vHBwEqpRIubG3sq3M0yhxxtsLmya0hNIea7acygjIAssNmBKig5hSgSgNI4WM8LDaZes2dyoxEj3mV1hgJgJTxMR5XRYAKKbZ9a4No9jqWmNeDj099vdNux9QlH3decBUBSLyOxTejY1IAVUbg4zKDBJVRMYDc17GknaCwrMAZAepKRQCCd4mRY94lyiYCkHO7wo16EKAyKgMQLFU/sF/HknaCcvLd6nIAShhLRNTqlNS+szASHbhTagMTC5B3DqyZILmKc6U5GwcK3mh3MIgDqN8E0MLfFskHaHruxtdN03DbuSBAi0xQGQtEVy+b8DhQ/Swft5VjXVhDSgSoQEb/61gyT5CohkliLQFqXmMRAUrQ4a+Hx4GqyQJUS0/VFqC++XBHIAUCFKe9leC9MO7CJvVcWL3xAXnMRESz9xsBarZQc6PAr4xu35EVI3tWafW+NKx7gBqcF1VZgPTnFBcFoJCnjmzfYcLyLu3StVV97Czl/vpQs5srMXhS9iVX/WYTNTfKAehwI+OJ004BiqTHq0CrGxfKB1DfBKimqNmX+8fkyF3md/92WCNRrPZbteie8xIa0+UqB58CAJnzQ+ZR+iBXqK/pLPML69rBOolbEoFUCyRKaEqXqTx8Qq3ebwKIhz3GFZ1TgPpCVc3AvbPE3S5gtLXOV/sVSomBeAmN6XKUS08VaPW+D6DK2GO5r2BR41QXFehrqrl16CzzCyJbfLVfpfpemC1WVlfL/BbAJxMgr6WakExHU7rUJoCcZX4rtmAiX+1XT3pwInpONJTgS1dERfAJuzDNWjvN0vfzU6LdWhfR1wAqSJJRaE15nmV+L9wlWn9r3Ur9sdCcaHMJYFVCcYAK0QMKmCBPcKwFkk5LhYtKrEzwbzwmJx8PD9UvucjK+E11pbnL/O7fLrFxAHIzUln9NK2E0gCVw6ceIDN61gHyZc5oLoPN2kKMmtnn1hxObo20foLxPSBnmV/e+ny1X3qQOKjlyp6valogHSCDn7IAFcSnFiAZKlspY7r+SebI6CbXZtRDWrcAPdytdJJaSBk0p5IeOcv8smXC18Vqv5V4aAfmPfsyUhm3UUUJnnR5KklP5W9oM8LxWKBQUVqPLKXtygFk9JraO0R1ImNXOHnks/Hw0E7dy1a6n1BW0nkxNQJkR6Q1jWKG2S1MkPVHH0hphPhmdheglgQl5o5oXzA/7kM7472VUTB2lgoCpJrKCCjqrqoHoKgmkMlrezoqqVWuVkXlu1wflBbk1/baHcW0L7yq58i2FQSNE6Au8PFeVSugaAFQJeLPmDZQmPYbAXIie61m9ulsU5VqFFOIi3823npoZ4zPxndBT+W7SI5DUPv9GdyyJA4Rjda3EteWbxAaOK+527SKDXXxnipGRaa0dvpsfEf41AFU2X+00QBptioWoMoPkDfUsQ8YRib0YxIDosTYqdic6I6eje8Mn4AL8x+NBEiFKVEA6bnsE9gA+wCyvJZTuO6BJwlQ8/IunT0b3yE+fgtUm7QJIJ2ERoCUydGDLXnMMho+su2wxz2D1om0DtdFcxOwQN08G99N6KxkX6nGGDkKIPnd6QrZJ9No01pa7OhbfLj1Ns1SjT01I6J6n5bKTyGAOng2vmt8nGve3Mmqu7ZWI/XVuEzo3A43HoDqA5+gx3OKc8K70G9NipaoYtrX28fquBvfNT5Gl8v47k+rpwymiAWoHzimh+JGgn4TQN66KXcaAZBtDWMVNZC47NnbBUBHj4qtrukB2Vc2IkauK6xKA8jXVjrLRhTlj4ea2towPX29cDezZDqRn+hlfhsyDnu9NW8IFDoBYUXhwr5RwbfOjQ+XCVDdtfNd8toUfdl4ARfmL0+Lqo0UXoCaG9vwXbp/9DvwNvzE3spoyDg48tCJtRRLdVTxctSjsfBjmPj65ogDyHQpfY0EbpKsM9fUyATI8mAmEQ2VMkPpIEC1IVudomKgYw3dc7rW+FpKN95Hjamo2ucpECOEkiYDxP0Q/xoKaZwaKe9ltrnK3Ey8TOm6wYDB9TvVZiWMA9XdjU8EiBJi8sKgGStCetzYFUDaH7wehdSWIpvSC1Ac8SKfEZYZJ3dcWENpARVa3gVcWPyz8QIPl5UdL0EdAaWatmrAox1A+l+1FhOHm14S57gwf73raizLM3IZgbld3VYqtEIZfTbex08tQHq/C6Si56N6Esu38QMFiNLjlDyANG8ldxgbWgERAKmkRllG2VFNbsddph/ta2foFKChZ+mErG68t/HNzpfr5UzjpBDjobieL1IaQA1XMAYgb6QL23YB4YJcDCuPdYgh3lu4A5DuYRNLE4rhYHjJ5uiST2+YBqb4OJDdd28Ms1XspFye7f50k+WKg2O3fjhlXYIwQH3l0eSO2GJ8jRtDvLds89waQOk0SkWOA8Gcsm5Hop2xHzcWcpGpI8tThMSJ74j/C4xizIx0jW0rJq49j1WK58QRtfGWbdXL+P2ppQlNC0CeoUPZNXOke7FIVZ5gKsGENzdZU2RThSKaulKCwU5bgKxs/exHOKLad3BkG1xY4KkMeOV37iqtyUPPKvyRBkW3NSYoIag0KuQVNJGVJounlIVZH1UUQCGDov0inyP0JdfT6U7a3dDz+GDsh8Z/tF9Y1YSWcesDrY5qFlcYBdYmiz5BqVsXTsff15HTv9DrpjEXBo9e4xCI7ERaAkE1/waZ6TcJUBhEXiW+kwfVdkqaLljh0E4Osl5KJSMhp0r+H+mq0HygMEPNJ+jkzpf5e80LoBms+Liq35wkSsnleDMkue9gYVXNGbxn9ajUSvXgyNqtkTieO6fur4++ar5vaQF91+qwGlYv11XBVx0cbqTHQOO68e6T92ppR8yxpfAldIuq8yXeJJWvTxDrn2QNdM9Z1dpYL3FuXKd+XvgqFrRA3gmJ9SeYJD+VHoM3DT42Jqm75uKYClvqSvEG8Ym1CVfRiBOtuKqVCj3WE6Cn4QQT5mfsyugtT60KADQK01N7ggWjZ06VD1DbcSDkZy5UMIiWUksGh9MtmveaW7nrRPMtg4KajK7UksHBdIjP3MhZJ5pvmRSEM3qkLZcXSIf4zI+cNRL5lklBOKNHasHO0DK/yM/8yFknmm+ZC0d7VLPQuL5kcMiFta8xaqrkrBPNt0wKwhk9Mtnr7FUHqKmQs050vgVqjoFQ86MOYiC1ZHB9OtQ8yFknmm+ZFIQz+hQzDoSaEznrROePA7VLh5pNdTESXeYEqJlQ9wC118sy8nZQUKnqTE05RSrSlp9xWJaXTVdBpaozNeUUu76thADNfDkI0HgLmpqGL1XO3AOEmmchQKgsIUCoLCFAqCwhQKgsdQnQOf2d9bW3dGvEXt3aNrcqRX9/Z55y60LLoPWRL8Wuey1ysAS4xbl1U35d8tQhQOdgLpJ8c3h7gOAaZQME+S/cVYSgIgCZZbQB6K2/QC7vLxeoS566AwhmklTivu6Nf3zX8XZ/LPt3/PUtspibHoAJThc/VDPBKVQKrQzMjmIVgToll6LKAguyTsr7SEuzJgDitdl6V3I5+3f8yulq/12qLm97x0SsUXcA7cEFKzgAAAKbSURBVNJZABfvW4eJ/bs3/2NbC3THA+TvEy741klSzBcJPMBBeinkX5hat3VSPGywWztNobYsKIh87N9+smUpAiBWm2rr5odT7Rr5w1qv/uGjWl3KOOhUdQgQm4a0tc7/+tsDdOGdD/O5ceRinSOX/GRzNrcU8i8xXXC5SUk5bojn5aW0K4nGQLdUvDbUhSW6sf07PvuLFz/8WaMuk1DXAJE/dWYwMgAixMCfGNkgBOzf+cV0D6YsEPEZx4nzamHEzLK2joM/bQ8Qb3hWm+ozp1sA9Dd/+E+/atZlEhpDDJRtgQg3H5UWiGy3aHx2duJuWK2yAmGwhneti1+WB9DbuSdbp041sYTP/NFJsy6TUJe9sJseoL0wuDTE4GYAxLpiWyzgOHc83YNpvTBWCqtTeo3A5+yygGX/raezARK/aeuW5HJI+t0bTwuKWV0moS7HgXb50Avt8Vy8r20vDLIxGGmPhVysFqXIcSDe/WrbC9ulLgeGuH7kHev5APFqkF5Yam0YOtTBy7pMQjgSjcoSAoTKEgKEyhIChMoSAoTKEgKEyhICxMSXiDReJPL0/ZOqzQwJAWI6pO9RO9zQ3nm+d03NqrUoLgSIiQFE34klhADFCAFi4gBVQ+LE9laIM1uFf1epa/Mte4ziQoCYBECjI9vUCg0v2QQLdAivVxtqfg1lCQFikgBdsvkdwIXQAwDR9zvqfg1lCQFi0iwQe/v5EgVoyNau8L4JHQVCgJgEQINlYnCWTgkLhN6rSQgQk9YLY0aIWaBR3QtoUBUCJKSNAwE0eytLpwAmuQMVEALExEeiqRkakAjoA4SeQW+Z7kd+aoQAobKEAKGyhAChsoQAobKEAKGyhAChsoQAobKEAKGyhAChsoQAobL0//1B+vJdP/x7AAAAAElFTkSuQmCC" style="display: block; margin: auto;" /></p>
+<div id="compare-to-predict_phenology" class="section level3">
+<h3>Compare to <code>predict_phenology()</code></h3>
+<p>To demonstrate this provides the same information as
+<code>predict_phenology()</code> we can compare the outputs. Now we will
+use the predicted spawn date of <code>&quot;2014-09-15&quot;</code> as our input
+in <code>predict_phenology()</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>bt_emerge <span class="ot">&lt;-</span> <span class="fu">predict_phenology</span>(<span class="at">data =</span> crooked_river,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>              <span class="at">dates =</span> date,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>              <span class="at">temperature =</span> temp_c,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>              <span class="at">spawn.date =</span> <span class="st">&quot;2014-09-15&quot;</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>              <span class="at">model =</span> bt_emerge_mod</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>              )</span></code></pre></div>
+<p>And we can compare <code>dev_period</code> to verify the outputs
+match.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># are they the same (yes!)</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>bt_emerge<span class="sc">$</span>dev_period <span class="sc">==</span> bt_spawn<span class="sc">$</span>dev_period</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt;      start stop</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; [1,]  TRUE TRUE</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#print out values</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>bt_emerge<span class="sc">$</span>dev_period; bt_spawn<span class="sc">$</span>dev_period</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; 1 2014-09-15 2015-03-21</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; 1 2014-09-15 2015-03-21</span></span></code></pre></div>
+</div>
+</div>
+<div id="using-multiple-inputs-for-predict_spawn" class="section level2">
+<h2>Using multiple inputs for <code>predict_spawn()</code></h2>
+<p>Like <code>predict_phenology()</code>, <code>predict_spawn()</code>
+can easily be mapped across multiple variable sets to automate the
+function. We can use a simple example of observing emerging fish across
+multiple months to demonstrate.</p>
+<p>We’ll assume we observed fish emerging February 15, March 15, and
+April 15 in 2015. And then <code>map()</code> the function across those
+dates using the <code>purrr</code> package.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#vector of dates</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>emerge_days <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;2015-02-15&quot;</span>,<span class="st">&quot;2015-03-15&quot;</span>, <span class="st">&quot;2015-04-15&quot;</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co"># object for predicting spawn timing across three emergence days</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>bt_multiple_emerge <span class="ot">&lt;-</span> <span class="fu">map</span>(emerge_days, <span class="co"># vector of emergence dates</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>                          predict_spawn, <span class="co"># predict_spawn function</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>                          <span class="co"># everything below are arguments to predict_spawn()</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>                          <span class="at">data =</span> crooked_river,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>                          <span class="at">dates =</span> date,</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>                          <span class="at">temperature =</span> temp_c,</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>                          <span class="at">model =</span> bt_emerge_mod)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co"># we can access just the dev_periods using map_df</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co"># the start column provides the predicted spawn dates</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>bt_multiple_emerge <span class="sc">|&gt;</span> </span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev_period&quot;</span>)</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt;        start       stop</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; 1 2014-08-29 2015-02-15</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; 2 2014-09-11 2015-03-15</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; 3 2014-09-27 2015-04-15</span></span></code></pre></div>
+<p>Based on our predictions, the fish spawned for our respective
+observed emergence dates on August 29, September 11, and September 27 in
+2014.</p>
+<p><code>predict_spawn()</code> can be automated to greater extents just
+like with <code>predict_phenology()</code>. We recommend reading the <a href="https://bmait101.github.io/hatchR/articles/Predict_phenology_advanced.html">Predict
+fish phenology: advanced</a> vignette to review ways to map across
+multiple variables.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

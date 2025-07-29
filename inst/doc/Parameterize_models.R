@@ -162,13 +162,13 @@ sturgeon_res <- predict_phenology(data = data_sim,
 all_res <- data.frame(matrix(NA, 3, 2))
 colnames(all_res) <- c("start", "stop")
 
-all_res$start <- c(catfish_res$dev.period$start, 
-                   smb_res$dev.period$start, 
-                   sturgeon_res$dev.period$start)
+all_res$start <- c(catfish_res$dev_period$start, 
+                   smb_res$dev_period$start, 
+                   sturgeon_res$dev_period$start)
 
-all_res$stop <- c(catfish_res$dev.period$stop,
-                  smb_res$dev.period$stop, 
-                  sturgeon_res$dev.period$stop)
+all_res$stop <- c(catfish_res$dev_period$stop,
+                  smb_res$dev_period$stop, 
+                  sturgeon_res$dev_period$stop)
 
 
 all_res <- all_res |> 

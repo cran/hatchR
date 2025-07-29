@@ -560,40 +560,49 @@ format it’s easy with <code>tidyr::unnest()</code>.</p>
 <p>We can do a last data check to make sure we have continuous data.</p>
 <p>First we’ll use a smaller example to show how it works and then
 expand to our full dataset.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Pull data from one sits</span></span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Pull data from one site</span></span>
 <span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>PIBO_1345_summ <span class="ot">&lt;-</span> isaak_summ_bt <span class="sc">|&gt;</span></span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="fu">filter</span>(site <span class="sc">==</span> <span class="st">&quot;PIBO_1345&quot;</span>) <span class="sc">|&gt;</span></span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="st">&quot;summ_obj&quot;</span>)</span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co"># We create a column that either contains NA, TRUE, or FALSE</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#   NA is for first data</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#   TRUE is if the difference between one row and the row preceding it is 1</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#   FALSE is the difference is not 1</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>PIBO_1345_summ <span class="sc">|&gt;</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(date)) <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="fu">filter</span>(diff <span class="sc">==</span> <span class="cn">FALSE</span>) <span class="co"># since the output is empty there are no FALSE in diff</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; # A tibble: 0 × 4</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; # Groups:   site [0]</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; # ℹ 4 variables: site &lt;chr&gt;, date &lt;date&gt;, daily_temp &lt;dbl&gt;, diff &lt;lgl&gt;</span></span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a></span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co"># We can do the same to our isaak_summ_bt dataset</span></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#   only difference here is we are mapping with an anonymous function hence the</span></span>
-<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#   ~{..., .x$date...} syntax. </span></span>
-<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#   ~{} tells us it&#39;s an anonymous function while the .x allows to us to </span></span>
-<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#   call the column from whatever data is piped in</span></span>
-<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>isaak_summ_bt <span class="sc">|&gt;</span></span>
-<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> <span class="fu">map</span>(</span>
-<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a>    summ_obj, <span class="sc">~</span> {</span>
-<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>      <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fu">diff</span>(.x<span class="sc">$</span>date) <span class="sc">==</span> <span class="dv">1</span>) </span>
-<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>      }</span>
-<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>    )</span>
-<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(summ_obj, diff)) <span class="sc">|&gt;</span></span>
-<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>  <span class="fu">filter</span>(diff <span class="sc">==</span> <span class="cn">FALSE</span>) </span>
-<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt; # A tibble: 0 × 4</span></span>
-<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt; # Groups:   site [0]</span></span>
-<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt; # ℹ 4 variables: site &lt;chr&gt;, date &lt;date&gt;, daily_temp &lt;dbl&gt;, diff &lt;lgl&gt;</span></span>
-<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co"># all continuous!</span></span></code></pre></div>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co"># We can then use the hatchR function to check that our data are continuous</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># We see from the message they are!</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">check_continuous</span>(<span class="at">data =</span> PIBO_1345_summ, <span class="at">dates =</span> date)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co"># To demonstrate an example of our data not being continuous, we remove the 100th row</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="fu">check_continuous</span>(<span class="at">data =</span> PIBO_1345_summ[<span class="sc">-</span><span class="dv">100</span>,], <span class="at">dates =</span> date)</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; Warning: ! Data not continuous</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; ℹ Breaks found at rows:</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; ℹ 100</span></span></code></pre></div>
+<p>Next we can <code>map()</code> our <code>check_continuous()</code>
+across our nested data set.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"># Map check_continuous() across isaak_summ_bt</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co"># We&#39;ll only do the first 5 nested objects so the output doesn&#39;t get too long</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>isaak_summ_bt[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,] <span class="sc">|&gt;</span> <span class="co"># run on first five nested dataframes for convenience</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>                       <span class="co"># remove [1:5,] to run on all nested objects </span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">diff =</span> <span class="fu">map</span>( <span class="co"># mutate a dummy diff column to run map</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>    summ_obj, <span class="co"># nested data object (akin to &quot;data =&quot; argument in normal function)</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    check_continuous, <span class="co"># function name, no parentheses</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="at">dates =</span> date <span class="co"># specify dates argument with column name of dates in summ_obj</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  )</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  )</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; ℹ No breaks were found. All clear!</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 5 × 3</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt; # Groups:   site [5]</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt;   site      summ_obj             diff  </span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;list&gt;               &lt;list&gt;</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt; 1 PIBO_1345 &lt;tibble [1,826 × 2]&gt; &lt;NULL&gt;</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; 2 PIBO_1346 &lt;tibble [1,826 × 2]&gt; &lt;NULL&gt;</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; 3 PIBO_1350 &lt;tibble [1,826 × 2]&gt; &lt;NULL&gt;</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt; 4 PIBO_1368 &lt;tibble [1,826 × 2]&gt; &lt;NULL&gt;</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; 5 PIBO_1375 &lt;tibble [1,826 × 2]&gt; &lt;NULL&gt;</span></span></code></pre></div>
 </div>
 <div id="mapping-across-nested-data" class="section level2">
 <h2>Mapping Across Nested Data</h2>
@@ -602,54 +611,54 @@ that it doesn’t have any gaps we can start to map our
 <strong>hatchR</strong> functions onto the data.</p>
 <p>First we need to make a vector of spawn dates and get our model set
 up.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># spawn dataest</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>spawn_dates <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2014</span>), <span class="co"># year vector to map for custom function</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="cf">function</span>(year) { <span class="co"># custom paste function</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>    <span class="fu">c</span>(</span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-01&quot;</span>),</span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-15&quot;</span>),</span>
-<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-30&quot;</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>      )</span>
-<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    }</span>
-<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="fu">unlist</span>()</span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co"># bull trout hatch model</span></span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>bt_hatch <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
-<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>,</span>
-<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
-<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
-<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span></span>
-<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># spawn dataest</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>spawn_dates <span class="ot">&lt;-</span> <span class="fu">map</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2014</span>), <span class="co"># year vector to map for custom function</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="cf">function</span>(year) { <span class="co"># custom paste function</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    <span class="fu">c</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-01&quot;</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-15&quot;</span>),</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>      <span class="fu">paste0</span>(year, <span class="st">&quot;-09-30&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>      )</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>    }</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="fu">unlist</span>()</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co"># bull trout hatch model</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>bt_hatch <span class="ot">&lt;-</span> <span class="fu">model_select</span>(</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  <span class="at">author =</span> <span class="st">&quot;Austin et al. 2019&quot;</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;bull trout&quot;</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;MM&quot;</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>)</span></code></pre></div>
 <p>Then we can map it across our nested dataframe.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>hatch_res <span class="ot">&lt;-</span> isaak_summ_bt <span class="sc">|&gt;</span> </span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    <span class="at">dev_period =</span> <span class="fu">map2</span>(</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>      summ_obj, spawn_dates, </span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>      predict_phenology,</span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>      <span class="at">temperature =</span> daily_temp,</span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>      <span class="at">model =</span> bt_hatch,</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>      <span class="at">dates =</span> date</span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>      ) <span class="sc">|&gt;</span> </span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>      <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>      <span class="fu">list</span>()</span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="fu">select</span>(site, dev_period) <span class="sc">|&gt;</span> <span class="co"># just select the columns we want</span></span>
-<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(dev_period)) <span class="sc">|&gt;</span> <span class="co"># unnest everything</span></span>
-<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">days_to_hatch =</span> stop <span class="sc">-</span> start) <span class="co"># make a new column of days to hatch</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
-<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>hatch_res</span>
-<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,668 × 4</span></span>
-<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; # Groups:   site [139]</span></span>
-<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt;   site      start      stop       days_to_hatch</span></span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;date&gt;     &lt;date&gt;     &lt;drtn&gt;       </span></span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt; 1 PIBO_1345 2011-09-01 2011-11-11  71 days     </span></span>
-<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; 2 PIBO_1345 2011-09-15 2011-12-27 103 days     </span></span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; 3 PIBO_1345 2011-09-30 2012-02-07 130 days     </span></span>
-<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co">#&gt; 4 PIBO_1345 2012-09-01 2012-11-26  86 days     </span></span>
-<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co">#&gt; 5 PIBO_1345 2012-09-15 2013-01-04 111 days     </span></span>
-<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,663 more rows</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>hatch_res <span class="ot">&lt;-</span> isaak_summ_bt <span class="sc">|&gt;</span> </span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>    <span class="at">dev_period =</span> <span class="fu">map2</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>      summ_obj, spawn_dates, </span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>      predict_phenology,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>      <span class="at">temperature =</span> daily_temp,</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>      <span class="at">model =</span> bt_hatch,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>      <span class="at">dates =</span> date</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>      ) <span class="sc">|&gt;</span> </span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>      <span class="fu">map_df</span>(<span class="st">&quot;dev_period&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>      <span class="fu">list</span>()</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  <span class="fu">select</span>(site, dev_period) <span class="sc">|&gt;</span> <span class="co"># just select the columns we want</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> <span class="fu">c</span>(dev_period)) <span class="sc">|&gt;</span> <span class="co"># unnest everything</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">days_to_hatch =</span> stop <span class="sc">-</span> start) <span class="co"># make a new column of days to hatch</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>hatch_res</span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,668 × 4</span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt; # Groups:   site [139]</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#&gt;   site      start      stop       days_to_hatch</span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;     &lt;date&gt;     &lt;date&gt;     &lt;drtn&gt;       </span></span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a><span class="co">#&gt; 1 PIBO_1345 2011-09-01 2011-11-11  71 days     </span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="co">#&gt; 2 PIBO_1345 2011-09-15 2011-12-27 103 days     </span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="co">#&gt; 3 PIBO_1345 2011-09-30 2012-02-07 130 days     </span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="co">#&gt; 4 PIBO_1345 2012-09-01 2012-11-26  86 days     </span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="co">#&gt; 5 PIBO_1345 2012-09-15 2013-01-04 111 days     </span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,663 more rows</span></span></code></pre></div>
 <blockquote>
 <p>It’s not output here, but this will output a boatload of warnings
 that some fish aren’t hatching. However, it’s pretty safe to assume that
@@ -666,11 +675,11 @@ they are interchangeable here as long as you set up your variable grid
 for <code>purrr::pmap()</code>. Secondly, we’re actually piping the
 output of the <code>purrr::map2()</code> into
 <code>purrr::map_df()</code> function so we can just pull out the
-<code>dev.period</code> list element out of the
+<code>dev_period</code> list element out of the
 <code>predict_phenology()</code> output. Otherwise we’d end up with a
 list of the 4 outputs from <code>predict_phenology()</code>, which would
 end up being a pretty big object in your memory. So better just to store
-the 1x2 vector that is <code>dev.period</code>. Lastly, the
+the 1x2 vector that is <code>dev_period</code>. Lastly, the
 <code>purrr::map_df()</code> is piped into a list because the nested
 dataframe doesn’t know how to hold onto multiple dimension object (the
 1x2 vector), it just wants a singular list containing all the
@@ -679,29 +688,29 @@ elements.</p>
 <p>Briefly, we’ll add an extra set of columns to define whether a fish
 spawned early, mid, or late and then plot the distributions across those
 time periods.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>hatch_res <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">day =</span> <span class="fu">day</span>(start)) <span class="sc">|&gt;</span> </span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spawn_time =</span> <span class="fu">case_when</span>(</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Early&quot;</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">15</span> <span class="sc">~</span> <span class="st">&quot;Mid&quot;</span>,</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">30</span> <span class="sc">~</span> <span class="st">&quot;Late&quot;</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spawn_time =</span> <span class="fu">factor</span>(</span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>    spawn_time, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Late&quot;</span>, <span class="st">&quot;Mid&quot;</span>, <span class="st">&quot;Early&quot;</span>), </span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>    <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">as.integer</span>(days_to_hatch), </span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>    <span class="at">y =</span> spawn_time, </span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>    <span class="at">fill =</span> spawn_time, </span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>    <span class="at">color =</span> spawn_time</span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>    )) <span class="sc">+</span> </span>
-<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>  <span class="fu">geom_density_ridges</span>(<span class="at">alpha =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
-<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Blues&quot;</span>, <span class="at">direction =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Blues&quot;</span>, <span class="at">direction =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Days to hatch&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Spawn time&quot;</span>) <span class="sc">+</span></span>
-<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>hatch_res <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">day =</span> <span class="fu">day</span>(start)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spawn_time =</span> <span class="fu">case_when</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;Early&quot;</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">15</span> <span class="sc">~</span> <span class="st">&quot;Mid&quot;</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>    day <span class="sc">==</span> <span class="dv">30</span> <span class="sc">~</span> <span class="st">&quot;Late&quot;</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spawn_time =</span> <span class="fu">factor</span>(</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>    spawn_time, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Late&quot;</span>, <span class="st">&quot;Mid&quot;</span>, <span class="st">&quot;Early&quot;</span>), </span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>    <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">as.integer</span>(days_to_hatch), </span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>    <span class="at">y =</span> spawn_time, </span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>    <span class="at">fill =</span> spawn_time, </span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    <span class="at">color =</span> spawn_time</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>    )) <span class="sc">+</span> </span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>  <span class="fu">geom_density_ridges</span>(<span class="at">alpha =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Blues&quot;</span>, <span class="at">direction =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Blues&quot;</span>, <span class="at">direction =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Days to hatch&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Spawn time&quot;</span>) <span class="sc">+</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;none&quot;</span>)</span></code></pre></div>
 <p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
 </div>
 </div>

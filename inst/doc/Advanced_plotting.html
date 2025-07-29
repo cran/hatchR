@@ -390,8 +390,8 @@ results and output them into a plotting format.</p>
 <span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>)</span>
 <span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a></span>
 <span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co"># Now that we have our model results, lets put them in a tibble for plotting</span></span>
-<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>WI_dev.period <span class="ot">&lt;-</span> WI_results <span class="sc">|&gt;</span></span>
-<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>WI_dev_period <span class="ot">&lt;-</span> WI_results <span class="sc">|&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev_period&quot;</span>) <span class="sc">|&gt;</span></span>
 <span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="fu">tibble</span>() <span class="sc">|&gt;</span></span>
 <span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a>    <span class="at">phenology =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;hatch&quot;</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="st">&quot;emerge&quot;</span>, <span class="dv">3</span>)), <span class="co"># add a phenology column</span></span>
@@ -401,7 +401,7 @@ results and output them into a plotting format.</p>
 <p>Now we’ll make a plot with the temperature and rectangles to show
 duration for the hatch and emergence periods.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># min and max for x-axis with 30 day buffer</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>x_lims <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">min</span>(WI_dev.period<span class="sc">$</span>start), <span class="fu">max</span>(WI_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>x_lims <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">min</span>(WI_dev_period<span class="sc">$</span>start), <span class="fu">max</span>(WI_dev_period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>y_lims <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">16</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># filter data for plot</span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>p_data <span class="ot">&lt;-</span> woody_island <span class="sc">|&gt;</span> <span class="fu">filter</span>(date <span class="sc">&gt;=</span> x_lims[<span class="dv">1</span>], date <span class="sc">&lt;=</span> x_lims[<span class="dv">2</span>])</span>
@@ -409,7 +409,7 @@ duration for the hatch and emergence periods.</p>
 <span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> p_data <span class="sc">|&gt;</span> </span>
 <span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(</span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">data =</span> WI_dev.period, </span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">data =</span> WI_dev_period, </span>
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
 <span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>      <span class="at">xmin =</span> start, <span class="at">xmax =</span> stop,</span>
 <span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>      <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, </span>
@@ -431,7 +431,7 @@ duration for the hatch and emergence periods.</p>
 labels on the legend.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>plot1 <span class="sc">+</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">geom_label</span>(</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="at">data =</span> WI_dev.period,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="at">data =</span> WI_dev_period,</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="fu">aes</span>(</span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>      <span class="at">x =</span> start <span class="sc">+</span> (stop <span class="sc">-</span> start) <span class="sc">/</span> <span class="fl">1.25</span>, </span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>      <span class="at">y =</span> (<span class="fl">10.25</span> <span class="sc">-</span> index), </span>
@@ -483,8 +483,8 @@ continuous years of data without any temperature anomalies.</p>
 <span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a>)</span>
 <span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a></span>
 <span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co"># make duration dataframe</span></span>
-<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>CR_dev.period <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
-<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>CR_dev_period <span class="ot">&lt;-</span> crooked_predictions <span class="sc">|&gt;</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev_period&quot;</span>) <span class="sc">|&gt;</span></span>
 <span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>  <span class="fu">tibble</span>() <span class="sc">|&gt;</span></span>
 <span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>    <span class="at">phenology =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;hatch&quot;</span>, <span class="dv">12</span>), <span class="fu">rep</span>(<span class="st">&quot;emerge&quot;</span>, <span class="dv">12</span>)), <span class="co"># add a phenology column</span></span>
@@ -524,7 +524,7 @@ break the years up in the plot.</p>
 <span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a></span>
 <span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co"># make plot (facet_wrap by development year)</span></span>
 <span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev.period, <span class="fu">aes</span>(</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev_period, <span class="fu">aes</span>(</span>
 <span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    <span class="at">xmin =</span> start, </span>
 <span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>    <span class="at">xmax =</span> stop, </span>
 <span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>    <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, </span>
@@ -534,7 +534,7 @@ break the years up in the plot.</p>
 <span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> crooked_river_sy, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c), <span class="at">size =</span> <span class="fl">0.25</span>, ) <span class="sc">+</span></span>
 <span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> crooked_river_sy, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
 <span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>  <span class="co"># set limits</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev.period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> </span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev_period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev_period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> </span>
 <span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span> </span>
 <span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>  <span class="co"># facet wrap here subset plots on developmental year</span></span>
 <span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span> </span>
@@ -630,7 +630,7 @@ multiple years</a>).</p>
 store all the results of each date (1200 total, 600 for each
 developmental period estimated) in our memory. So instead, we will pipe
 <code>|&gt;</code> our <code>pmap()</code> into a
-<code>map_dbl(&quot;dev.period&quot;)</code> command so we only are left with our
+<code>map_dbl(&quot;dev_period&quot;)</code> command so we only are left with our
 phenology estimates and not all the other data we would have otherwise
 outputted.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># make variable grid for pmap (we use dev_mods from previous example)</span></span>
@@ -642,7 +642,7 @@ outputted.</p>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">dates =</span> date,</span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">temperature =</span> temp_c</span>
 <span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="co"># pipe!</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev.period&quot;</span>) <span class="co"># just output dev.period</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">map_df</span>(<span class="st">&quot;dev_period&quot;</span>) <span class="co"># just output dev_period</span></span>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a></span>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="do">### now let&#39;s add the key columns for plotting</span></span>
 <span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a></span>
@@ -706,7 +706,7 @@ outputted.</p>
 <span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more row</span></span></code></pre></div>
 <p>Before we plot, let’s briefly walk through what we did there. First
 we made our predictions but then only output the start and stop data
-with the <code>map_df(&quot;dev.period&quot;)</code> command. Next we added a
+with the <code>map_df(&quot;dev_period&quot;)</code> command. Next we added a
 <code>Phenology</code> column with the appropriate phenology type
 determined by the structure of our <code>spawn_grid</code> object. Then
 we made a similar object for spawning which we combined with the mapping
@@ -776,19 +776,19 @@ plots we highly recommend the <a href="https://patchwork.data-imaginist.com/">pa
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a></span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co"># same plot as before but we&#39;ll filter the years to 2013 and 2014</span></span>
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>CR_dev.period_1314 <span class="ot">&lt;-</span> CR_dev.period <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2014</span>))</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>CR_dev_period_1314 <span class="ot">&lt;-</span> CR_dev_period <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2014</span>))</span>
 <span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>crooked_river_sy_1314 <span class="ot">&lt;-</span> crooked_river_sy <span class="sc">|&gt;</span> <span class="fu">filter</span>(year <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2013</span>, <span class="dv">2014</span>))</span>
 <span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
 <span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co"># name plot as object p1</span></span>
 <span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev.period_1314, <span class="fu">aes</span>(</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> CR_dev_period_1314, <span class="fu">aes</span>(</span>
 <span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>    <span class="at">xmin =</span> start, <span class="at">xmax =</span> stop, <span class="co"># draw bars</span></span>
 <span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>    <span class="at">ymin =</span> <span class="dv">10</span> <span class="sc">-</span> index, <span class="at">ymax =</span> <span class="fl">10.5</span> <span class="sc">-</span> index, <span class="co"># use index to vertically place rects</span></span>
 <span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>    <span class="at">fill =</span> phenology</span>
 <span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  )) <span class="sc">+</span></span>
 <span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> crooked_river_sy_1314, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c), <span class="at">size =</span> <span class="fl">0.25</span>, ) <span class="sc">+</span></span>
 <span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> crooked_river_sy_1314, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> temp_c)) <span class="sc">+</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev.period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev.period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> <span class="co"># set limits</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="fu">min</span>(CR_dev_period<span class="sc">$</span>start) <span class="sc">-</span> <span class="fu">days</span>(<span class="dv">30</span>), <span class="fu">max</span>(CR_dev_period<span class="sc">$</span>stop) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">30</span>))) <span class="sc">+</span> <span class="co"># set limits</span></span>
 <span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="at">date_labels =</span> <span class="st">&quot;%b&quot;</span>) <span class="sc">+</span> <span class="co"># change X label to month</span></span>
 <span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">&quot;free_x&quot;</span>) <span class="sc">+</span> <span class="co"># facet wrap here subset plots on developmental year</span></span>
 <span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;navyblue&quot;</span>, <span class="st">&quot;dodgerblue&quot;</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Emerge&quot;</span>, <span class="st">&quot;Hatch&quot;</span>)) <span class="sc">+</span> <span class="co"># custom colors</span></span>

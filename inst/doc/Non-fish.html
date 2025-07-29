@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Morgan Sparks, Bryan M. Maitland" />
+
+
+<title>Non-fish examples</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Non-fish examples</h1>
+<h4 class="author">Morgan Sparks, Bryan M. Maitland</h4>
+
+
+
+<p>Because poikilotherms largely have a similar mechanistic relationship
+with ambient temperature and developmental rates,
+<strong>hatchR</strong>, may easily be applied to other non-fish
+species. Unlike many examples in other articles on this website,
+non-fish species will obviously rely exclusively on the
+<code>fit_model()</code> function for creating developmental models. An
+excellent starting place for potential model parameterization is the <a href="#model-sources">Model sources</a> section below.</p>
+<p>Here, we outline examples of how one can use developmental studies
+from peer-reviewed or grey literature to develop species- or
+population-specific models in a generalizeable format.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(hatchR)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(purrr)</span></code></pre></div>
+<div id="a-simple-example-coastal-tailed-frogs" class="section level1">
+<h1>A simple example: coastal tailed frogs</h1>
+<p>Tailed frogs (<em>Ascaphus</em> spp.) are common amphibians in the
+Rocky and Cascade Mountain regions of the northern United States and
+southern Canada, generally occupying the cold and fast-flowing habitat
+of headwater streams of the region. Compared to many other frog species,
+tailed frogs are comparatively slow growing and occupy colder
+habitats.</p>
+<p>Brown (1975) raised coastal tailed frogs (<em>A. truei</em>) at
+temperatures ranging from 5-20 °C. Using those data we can easily
+parameterize a developmental model for coastal tailed frogs to be used
+in similar situations we present with fish.</p>
+<p>First we set up the raw data from the study and parameterize the
+model with <code>fit_model()</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="do">### parameterize mod</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>ascaphus_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">temp =</span> <span class="fu">c</span>(<span class="fl">7.6</span>,<span class="fl">9.8</span>,<span class="dv">11</span>,<span class="dv">13</span>,<span class="fl">14.5</span>,<span class="dv">15</span>,<span class="dv">18</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                        <span class="at">days =</span> <span class="fu">c</span>(<span class="dv">44</span>,<span class="fl">27.1</span>,<span class="fl">22.6</span>,<span class="fl">16.1</span>,<span class="fl">13.4</span>,<span class="fl">12.7</span>,<span class="fl">10.7</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>ascaphus_mod <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(<span class="at">temp =</span> ascaphus_data<span class="sc">$</span>temp,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                          <span class="at">days =</span> ascaphus_data<span class="sc">$</span>days,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                          <span class="at">species =</span> <span class="st">&quot;ascaphus&quot;</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>                          <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span>)</span></code></pre></div>
+<p>To demonstrate the respective effective value at different daily
+temperatures we can evaluate our model across a vector of daily
+temperatures</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">### get effective values</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>temps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">6</span><span class="sc">:</span><span class="dv">20</span>) <span class="co"># daily temps</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#loop to calculate model expression at different temps</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>ef_vals <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="cf">for</span> (x <span class="cf">in</span> temps) {</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  ef <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse</span>(<span class="at">text =</span> ascaphus_mod<span class="sc">$</span>expression<span class="sc">$</span>expression)) <span class="co"># call model expression</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  ef_vals <span class="ot">&lt;-</span> <span class="fu">rbind</span>(ef_vals, ef)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>}</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co"># make data into plotable format</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>ascaphus_ef <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="dv">15</span>, <span class="dv">2</span>) <span class="sc">|&gt;</span> tibble<span class="sc">::</span><span class="fu">tibble</span>()</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="fu">colnames</span>(ascaphus_ef) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;temp&quot;</span>, <span class="st">&quot;ef&quot;</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>ascaphus_ef<span class="sc">$</span>temp <span class="ot">&lt;-</span> temps</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>ascaphus_ef<span class="sc">$</span>ef <span class="ot">&lt;-</span> ef_vals[, <span class="dv">1</span>]</span></code></pre></div>
+<p>We can then demonstrate our fit and the effective values for a daily
+temperature:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="do">### plot</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>fmt <span class="ot">&lt;-</span> <span class="st">&quot;~R^2 ==  %.4f&quot;</span> <span class="co"># format for R^2 val</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>lab1 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(fmt, ascaphus_mod<span class="sc">$</span>r_squared) <span class="co"># R^2 label</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co"># plot 1 of model fit</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> ascaphus_mod<span class="sc">$</span>pred_plot <span class="sc">+</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Incubation Temperature (°C)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Days to Hatch&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">50</span>)) <span class="sc">+</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">10</span>, <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">35</span>), <span class="at">label =</span> <span class="fu">c</span>(lab1),  <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co"># data table for 1 degree increase of temp for 0.01 increase in effective value for reference</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>data_1 <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">t =</span> <span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">20</span>), <span class="at">e =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.20</span>, <span class="at">by =</span> <span class="fl">0.01</span>))</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#plot 2</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> ascaphus_ef <span class="sc">|&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> temp, <span class="at">y =</span> ef)) <span class="sc">+</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> temp, <span class="at">y =</span> ef)) <span class="sc">+</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> data_1, <span class="fu">aes</span>(<span class="at">x =</span> t, <span class="at">y =</span> e), <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  <span class="co"># geom_abline(intercept = 0, slope = .01, linetype = &quot;dashed&quot;) +</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Daily Average Temperature (°C)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Effective Value&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>p1 <span class="sc">+</span> p2 </span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+<div id="multiple-populations-developmental-rates-of-cabbage-beetles" class="section level1">
+<h1>Multiple populations: developmental rates of cabbage beetles</h1>
+<p>The application of <strong>hatchR</strong> need not be limited to
+aquatic species, though many such putative species source data are
+available. Here we demonstrate how data from a clinal study on cabbage
+beetles (<em>Colaphellus bowringi</em>) from <span class="citation">Tang
+et al. (2017)</span> can be leveraged to understand population specific
+developmental rates, by generating effective value models for five
+separate populations.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># vector of experimental temps</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>tang_temps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">16</span>, <span class="dv">19</span>, <span class="dv">22</span>, <span class="dv">24</span>, <span class="dv">26</span>, <span class="dv">28</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># vectors of population specific developmental rates at the above temperatures</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>hb <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">24.834</span>, <span class="fl">19.481</span>, <span class="fl">14.172</span>, <span class="fl">11.205</span>, <span class="fl">9.865</span>, <span class="fl">8.570</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>sy <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">23.822</span>, <span class="fl">19.129</span>, <span class="fl">13.644</span>, <span class="fl">10.897</span>, <span class="fl">9.645</span>, <span class="fl">8.306</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>ta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">21.887</span>, <span class="fl">18.381</span>, <span class="fl">12.984</span>, <span class="fl">10.809</span>, <span class="fl">9.382</span>, <span class="fl">8.130</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>xy <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">21.623</span>, <span class="fl">18.337</span>, <span class="fl">12.589</span>, <span class="fl">10.633</span>, <span class="fl">9.205</span>, <span class="fl">8.085</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>xs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">21.271</span>, <span class="fl">16.666</span>, <span class="fl">11.797</span>, <span class="fl">9.929</span>, <span class="fl">9.117</span>, <span class="fl">6.942</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co"># make a list of pops</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>pop_list <span class="ot">&lt;-</span> <span class="fu">list</span>(hb, sy, ta, xy, xs)</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># map fit_model() over our list of pops</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>beetle_mods <span class="ot">&lt;-</span> pop_list <span class="sc">|&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="fu">map</span>(fit_model,</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>    <span class="at">temp =</span> tang_temps,</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>    <span class="at">species =</span> <span class="st">&quot;cabbage beetle&quot;</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>    <span class="at">development_type =</span> <span class="st">&quot;hatch&quot;</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>  <span class="fu">map</span>(<span class="st">&quot;expression&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>  <span class="fu">map</span>(<span class="st">&quot;expression&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>  <span class="fu">unlist</span>()</span></code></pre></div>
+<p>Now we have our five beetle models stored as character strings (to be
+parsed and evaluated later on).</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>beetle_mods</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;1 / exp(5.17706892381201 - log(x + -9.0421606255981))&quot; </span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [2] &quot;1 / exp(5.16085302046131 - log(x + -8.88858299500937))&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; [3] &quot;1 / exp(5.17970628340703 - log(x + -8.15597145640711))&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; [4] &quot;1 / exp(5.16007787793513 - log(x + -8.22714018896069))&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; [5] &quot;1 / exp(5.03375638770247 - log(x + -8.94965470593722))&quot;</span></span></code></pre></div>
+<p>To demonstrate the differences in developmental rates, we can turn
+each model into a reaction norm, much like we did in the second plot for
+the tailed frog example.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co"># data set up</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>temps <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">12</span><span class="sc">:</span><span class="dv">30</span>) <span class="co"># temps to iterate throug</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>pops <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="co"># pops to iterate through</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="st">&quot;Haerbin City&quot;</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="st">&quot;Shenyang City&quot;</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="st">&quot;Taian City&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="st">&quot;Xinyang County&quot;</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="st">&quot;Xiushui County&quot;</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>ef_vals_pops <span class="ot">&lt;-</span> <span class="cn">NULL</span> <span class="co"># NULL object to stor ef vals in </span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co"># loop stepping over temps and populations to create</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co"># temperature and population specific ef values</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="cf">for</span> (m <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(beetle_mods)) {</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  mod <span class="ot">&lt;-</span> beetle_mods[m]</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> pops[m]</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> temps) {</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>    ef <span class="ot">&lt;-</span> <span class="fu">eval</span>(<span class="fu">parse</span>(<span class="at">text =</span> mod))</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>    temp_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>      <span class="at">temperature =</span> x,</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>      <span class="at">effective_value =</span> ef,</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>      <span class="at">beetle_pops =</span> pop</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>    )</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>    ef_vals_pops <span class="ot">&lt;-</span> <span class="fu">rbind</span>(ef_vals_pops, temp_df)</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  }</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>}</span></code></pre></div>
+<p>After we run our loop to create population and temperature specific
+effective value estimates, we can plot each population’s effective value
+reaction norm.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>ef_vals_pops <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fu">tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> temperature, <span class="at">y =</span> effective_value, <span class="at">color =</span> beetle_pops)) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Daily Average Temperature (°C)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Effective Value&quot;</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">&quot;Dark2&quot;</span>, <span class="at">name =</span> <span class="st">&quot;Beetle Populations&quot;</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+</div>
+<div id="model-sources" class="section level1">
+<h1>Model sources</h1>
+<p>The above examples are meant to inform how we can easily leverage the
+<code>fit_model()</code> function for paramereterizing developmental
+models for non-fish taxa. We recommend our other articles on this site
+for examples of how these models may be leveraged for applied and basic
+questions. We also stress that the assumptions made for fish (as well
+taxa-specific ones not outlined here) should be considered when applying
+these models. Here we provide a non-exhaustive list of putative model
+sources for parameterizing developmental models for non-fish
+organisms.</p>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Class</th>
+<th align="left">Order</th>
+<th align="left">Genus</th>
+<th align="left">Species</th>
+<th align="left">Study</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Amphibia</td>
+<td align="left">Anura</td>
+<td align="left"><em>Lithobates</em></td>
+<td align="left"><em>L. sylvaticus</em></td>
+<td align="left"><span class="citation">Moore (1939)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>L. pipiens</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>L. clamitans</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>L. palustris</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Ascaphus</em></td>
+<td align="left"><em>A. truei</em></td>
+<td align="left"><span class="citation">Herbert A. Brown
+(1975)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Urodela</td>
+<td align="left"><em>Ambystoma</em></td>
+<td align="left"><em>A. gracile</em></td>
+<td align="left"><span class="citation">Herbert A. Brown
+(1976)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">Reptilia</td>
+<td align="left">Squamata</td>
+<td align="left"><em>Sceloporus</em></td>
+<td align="left"><em>S. undulatus</em></td>
+<td align="left"><span class="citation">Angilletta Jr., Winters, and
+Dunham (2000)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Podarcis</em></td>
+<td align="left"><em>P. muralis</em></td>
+<td align="left"><span class="citation">Van Damme et al.
+(1992)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Testudines</td>
+<td align="left"><em>Mauremys</em></td>
+<td align="left"><em>M. reevesii</em></td>
+<td align="left"><span class="citation">Du et al. (2007)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">181 species</td>
+<td align="left">141 studies in <span class="citation">While et al.
+(2018)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">Insecta</td>
+<td align="left">Plecoptera</td>
+<td align="left"><em>Nemurella</em></td>
+<td align="left"><em>N. pictetii</em></td>
+<td align="left"><span class="citation">John E. Brittain (1978)</span> ,
+<span class="citation">Elliott (1984)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Capnia</em></td>
+<td align="left"><em>C. atra</em></td>
+<td align="left"><span class="citation">John E. Brittain, Lillehammer,
+and Saltveit (1984)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Capnia</em></td>
+<td align="left"><em>C. bifrons</em></td>
+<td align="left"><span class="citation">Elliott (1986)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Mesocapnia</em></td>
+<td align="left"><em>M. oenone</em></td>
+<td align="left"><span class="citation">John E. Brittain, Lillehammer,
+and Saltveit (1984)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Taeniopteryx</em></td>
+<td align="left"><em>T. nebulosa</em></td>
+<td align="left"><span class="citation">J. E. Brittain
+(1977)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Coleoptera</td>
+<td align="left"><em>Colaphellus</em></td>
+<td align="left"><em>C. bowringi</em></td>
+<td align="left"><span class="citation">Tang et al. (2017)</span></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">18 species</td>
+<td align="left">Developmental equations in <span class="citation">Pritchard and Leggott (1987)</span></td>
+</tr>
+<tr class="even">
+<td align="left">Malacostraca</td>
+<td align="left">Decapoda</td>
+<td align="left"><em>Pontastacus</em></td>
+<td align="left"><em>P. leptodactylus</em></td>
+<td align="left"><span class="citation">Aydın and Dilek
+(2004)</span></td>
+</tr>
+<tr class="odd">
+<td align="left">Copepoda</td>
+<td align="left">Calanoida</td>
+<td align="left">10 genera</td>
+<td align="left">28 species</td>
+<td align="left"><span class="citation">Forster, Hirst, and Woodward
+(2011)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Cyclopoida</td>
+<td align="left"><em>Limnoithona</em></td>
+<td align="left"><em>L. tetraspina</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Oithona</em></td>
+<td align="left"><em>O. davisae</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Harpacticoida</td>
+<td align="left"><em>Microsetella</em></td>
+<td align="left"><em>M. norvegica</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Mesochra</em></td>
+<td align="left"><em>M.lilljeborgi</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Poecilostomatoida</td>
+<td align="left"><em>Oncaea</em></td>
+<td align="left"><em>O. venusta</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Cephalopoda</td>
+<td align="left">Octopoda</td>
+<td align="left"><em>Octopus</em></td>
+<td align="left"><em>O. vulgaris</em></td>
+<td align="left"><span class="citation">Márquez, Larson, and Almansa
+(2021)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>O. mimus</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Myopsida</td>
+<td align="left"><em>Loligo</em></td>
+<td align="left"><em>L. vulgaris</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>L. reynaudii</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Oegopsida</td>
+<td align="left"><em>Illex</em></td>
+<td align="left"><em>I. coindetii</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>I. illecebrosus</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Todarodes</em></td>
+<td align="left"><em>T.pacificus</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Ommastrephes</em></td>
+<td align="left"><em>O. bartramii</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Asteroidea</td>
+<td align="left">Valvatida</td>
+<td align="left"><em>Odontaster</em></td>
+<td align="left"><em>O. meridionalis</em></td>
+<td align="left"><span class="citation">HOEGH-GULDBERG and PEARSE
+(1995)</span></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>O. validus</em></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Asterina</em></td>
+<td align="left"><em>A. miniata</em></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"><em>Acanthaster</em></td>
+<td align="left"><em>A. planci</em></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-angillettajr.2000" class="csl-entry">
+Angilletta Jr., Michael J., R. Scott Winters, and Arthur E. Dunham.
+2000. <span>“Thermal Effects on the Energetics of Lizard Embryos:
+Implications for Hatchling Phenotypes.”</span> <em>Ecology</em> 81 (11):
+2957–68. <a href="https://doi.org/10.1890/0012-9658(2000)081[2957:TEOTEO]2.0.CO;2">https://doi.org/10.1890/0012-9658(2000)081[2957:TEOTEO]2.0.CO;2</a>.
+</div>
+<div id="ref-aydin2004" class="csl-entry">
+Aydın, Hamdi, and M. Kamil Dilek. 2004. <span>“Effects of different
+water temperatures on the hatching time and survival rates of the
+freshwater crayfish (<em>Astacus leptodactylus</em>) (Esch., 1823)
+eggs.”</span> <em>Turkish Journal of Fisheries and Aquatic Sciences</em>
+4 (2): –. <a href="https://dergipark.org.tr/en/pub/trjfas-ayrildi/issue/13289/160618">https://dergipark.org.tr/en/pub/trjfas-ayrildi/issue/13289/160618</a>.
+</div>
+<div id="ref-brittain1977" class="csl-entry">
+Brittain, J. E. 1977. <span>“The Effect of Temperature on the Egg
+Incubation Period of Taeniopteryx Nebulosa (Plecoptera).”</span>
+<em>Oikos</em> 29 (2): 302–5. <a href="https://doi.org/10.2307/3543618">https://doi.org/10.2307/3543618</a>.
+</div>
+<div id="ref-brittain1978" class="csl-entry">
+Brittain, John E. 1978. <span>“Semivoltinism in Mountain Populations of
+Nemurella Pictetii (Plecoptera).”</span> <em>Oikos</em> 30 (1): 1–6. <a href="https://doi.org/10.2307/3543518">https://doi.org/10.2307/3543518</a>.
+</div>
+<div id="ref-brittain1984" class="csl-entry">
+Brittain, John E., Albert Lillehammer, and Svein Jakob Saltveit. 1984.
+<span>“The Effect of Temperature on Intraspecific Variation in Egg
+Biology and Nymphal Size in the Stonefly, Capnia Atra
+(Plecoptera).”</span> <em>Journal of Animal Ecology</em> 53 (1): 161–69.
+<a href="https://doi.org/10.2307/4349">https://doi.org/10.2307/4349</a>.
+</div>
+<div id="ref-brown1975" class="csl-entry">
+Brown, Herbert A. 1975. <span>“Temperature and Development of the Tailed
+Frog, <em><span>Ascaphus</span> Truei</em>.”</span> <em>Comparative
+Biochemistry and Physiology Part A: Physiology</em> 50 (2): 397–405. <a href="https://doi.org/10.1016/0300-9629(75)90033-X">https://doi.org/10.1016/0300-9629(75)90033-X</a>.
+</div>
+<div id="ref-brown1976" class="csl-entry">
+Brown, Herbert A. 1976. <span>“The Time<span></span>temperature Relation
+of Embryonic Development in the Northwestern Salamander,
+<span><em>Ambystoma Gracile</em></span>.”</span> <em>Canadian Journal of
+Zoology</em> 54 (4): 552–58. <a href="https://doi.org/10.1139/z76-063">https://doi.org/10.1139/z76-063</a>.
+</div>
+<div id="ref-du2007" class="csl-entry">
+Du, Wei-Guo, Ling-Jun Hu, Jian-Lei Lu, and Ling-Jun Zhu. 2007.
+<span>“Effects of Incubation Temperature on Embryonic Development Rate,
+Sex Ratio and Post-Hatching Growth in the Chinese Three-Keeled Pond
+Turtle, <span><em>Chinemys Reevesii</em></span>.”</span>
+<em>Aquaculture</em> 272 (1): 747–53. <a href="https://doi.org/10.1016/j.aquaculture.2007.09.009">https://doi.org/10.1016/j.aquaculture.2007.09.009</a>.
+</div>
+<div id="ref-elliott1984" class="csl-entry">
+Elliott, J. M. 1984. <span>“Hatching Time and Growth of
+Nemurellapictetii (Plecoptera: Nemouridae) in the Laboratory and a Lake
+District Stream.”</span> <em>Freshwater Biology</em> 14 (5): 491–99. <a href="https://doi.org/10.1111/j.1365-2427.1984.tb00169.x">https://doi.org/10.1111/j.1365-2427.1984.tb00169.x</a>.
+</div>
+<div id="ref-elliott1986" class="csl-entry">
+———. 1986. <span>“The Effect of Temperature on the Egg Incubation Period
+of Capnia Bifrons (Plecoptera: Capniidae) from Windermere (English Lake
+District).”</span> <em>Holarctic Ecology</em> 9 (2): 113–16. <a href="https://www.jstor.org/stable/3682086">https://www.jstor.org/stable/3682086</a>.
+</div>
+<div id="ref-forster2011" class="csl-entry">
+Forster, Jack, Andrew G. Hirst, and Guy Woodward. 2011. <span>“Growth
+and Development Rates Have Different Thermal Responses.”</span> <em>The
+American Naturalist</em> 178 (5): 668–78. <a href="https://doi.org/10.1086/662174">https://doi.org/10.1086/662174</a>.
+</div>
+<div id="ref-hoegh-guldberg1995" class="csl-entry">
+HOEGH-GULDBERG, OVE, and JOHN S. PEARSE. 1995. <span>“Temperature, Food
+Availability, and the Development of Marine Invertebrate
+Larvae1.”</span> <em>American Zoologist</em> 35 (4): 415–25. <a href="https://doi.org/10.1093/icb/35.4.415">https://doi.org/10.1093/icb/35.4.415</a>.
+</div>
+<div id="ref-márquez2021" class="csl-entry">
+Márquez, Lorenzo, Majorie Larson, and Eduardo Almansa. 2021.
+<span>“Effects of Temperature on the Rate of Embryonic Development of
+Cephalopods in the Light of Thermal Time Applied to Aquaculture.”</span>
+<em>Reviews in Aquaculture</em> 13 (1): 706–18. <a href="https://doi.org/10.1111/raq.12495">https://doi.org/10.1111/raq.12495</a>.
+</div>
+<div id="ref-moore1939" class="csl-entry">
+Moore, John A. 1939. <span>“Temperature Tolerance and Rates of
+Development in the Eggs of Amphibia.”</span> <em>Ecology</em> 20 (4):
+459–78. <a href="https://doi.org/10.2307/1930439">https://doi.org/10.2307/1930439</a>.
+</div>
+<div id="ref-pritchard1987" class="csl-entry">
+Pritchard, G., and M. A. Leggott. 1987. <span>“Temperature, Incubation
+Rates and Origins of Dragonflies.”</span> <em>Advances in
+Odonatology</em> 3 (1): 121–26. <a href="https://natuurtijdschriften.nl/pub/593065">https://natuurtijdschriften.nl/pub/593065</a>.
+</div>
+<div id="ref-tang2017" class="csl-entry">
+Tang, Jianjun, Haimin He, Chao Chen, Shu Fu, and Fangsen Xue. 2017.
+<span>“Latitudinal Cogradient Variation of Development Time and Growth
+Rate and a Negative Latitudinal Body Weight Cline in a Widely
+Distributed Cabbage Beetle.”</span> <em>PLOS ONE</em> 12 (7): e0181030.
+<a href="https://doi.org/10.1371/journal.pone.0181030">https://doi.org/10.1371/journal.pone.0181030</a>.
+</div>
+<div id="ref-vandamme1992" class="csl-entry">
+Van Damme, Raoul, Dirk Bauwens, Florentino Braña, and Rudolf F.
+Verheyen. 1992. <span>“Incubation Temperature Differentially Affects
+Hatching Time, Egg Survival, and Hatchling Performance in the Lizard
+Podarcis Muralis.”</span> <em>Herpetologica</em> 48 (2): 220–28. <a href="https://www.jstor.org/stable/3892675">https://www.jstor.org/stable/3892675</a>.
+</div>
+<div id="ref-while2018" class="csl-entry">
+While, Geoffrey M., Daniel W. A. Noble, Tobias Uller, Daniel A. Warner,
+Julia L. Riley, Wei-Guo Du, and Lisa E. Schwanz. 2018. <span>“Patterns
+of Developmental Plasticity in Response to Incubation Temperature in
+Reptiles.”</span> <em>Journal of Experimental Zoology Part A: Ecological
+and Integrative Physiology</em> 329 (4-5): 162–76. <a href="https://doi.org/10.1002/jez.2181">https://doi.org/10.1002/jez.2181</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
